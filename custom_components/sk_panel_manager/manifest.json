@@ -1,0 +1,24 @@
+{
+  "domain": "sk_panel_manager",
+  "name": "SK Panel Manager",
+  "after_dependencies": [
+    "lovelace"
+  ],
+  "codeowners": [
+    "@SkynetCom"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "frontend",
+    "http",
+    "panel_custom",
+    "websocket_api"
+  ],
+  "documentation": "https://github.com/SkynetCom/sk-panel-manager-ha",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/SkynetCom/sk-panel-manager-ha/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}
