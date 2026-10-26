@@ -23,8 +23,19 @@ def panel_catalog(hass: HomeAssistant) -> list[PanelInfo]:
             icon=panel.sidebar_icon,
             require_admin=bool(panel.require_admin),
             default_visible=bool(getattr(panel, "sidebar_default_visible", True)),
+            kind=_kind(url_path, panel.component_name, getattr(panel, "config_panel_domain", None)),
         ))
     return out
+
+
+def _kind(url_path: str, component: str | None, config_domain: str | None) -> str:
+    if component == "lovelace":
+        return "dashboard"
+    if component == "app" or url_path == "hassio":  # add-on panels and the add-on store
+        return "addon"
+    if component in ("custom", "iframe") or config_domain:
+        return "integration"
+    return "builtin"
 
 
 def panel_as_dict(panel: PanelInfo) -> dict:
@@ -34,6 +45,7 @@ def panel_as_dict(panel: PanelInfo) -> dict:
         "icon": panel.icon,
         "require_admin": panel.require_admin,
         "default_visible": panel.default_visible,
+        "kind": panel.kind,
     }
 
 

@@ -8,7 +8,7 @@
 
 Choose which panels and dashboards each Home Assistant user sees, from one admin-only panel.
 
-> **Status: in development (0.1.0).** The rules engine works; the full graphical admin panel and the kiosk editor are coming next.
+> **Status: in development (0.2.0).** Rules engine and graphical admin panel (overview, access matrix, users, profiles, settings) work. Next: the browser module (lock sidebar editing, redirect hidden panels) and the kiosk editor.
 
 ## How it works
 - Rules per **user** and per **profile** (for example *Kids*, *Guests*, *Tablet*). With several profiles, permissions add up; a rule set on the user always wins.

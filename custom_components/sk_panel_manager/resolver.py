@@ -22,6 +22,7 @@ class PanelInfo:
     icon: str | None = None
     require_admin: bool = False
     default_visible: bool = True
+    kind: str = "builtin"   # dashboard | builtin | integration | addon
 
 
 @dataclass(frozen=True)

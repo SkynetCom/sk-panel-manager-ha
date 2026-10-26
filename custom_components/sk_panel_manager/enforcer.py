@@ -128,14 +128,18 @@ class PanelEnforcer:
             }
 
         current = sidebar or {}
-        current_hidden = current.get("hiddenPanels")
-        if not isinstance(current_hidden, list):
-            # Never edited: the frontend hides panels registered as not visible by default.
-            current_hidden = [p.url_path for p in catalog if not p.default_visible]
-            self.store.snapshots[user.id].setdefault("seeded_hidden", current_hidden)
+        current_hidden = current.get("hiddenPanels") if isinstance(current.get("hiddenPanels"), list) else []
         new_hidden = merge_hidden(current_hidden, applied.get("hidden", []), eff.hidden)
+
+        # The frontend shows a panel registered as not visible by default (Lights, Climate...)
+        # only when it's in panelOrder, so an explicit "allow" adds it there.
+        forced = [p.url_path for p in catalog if not p.default_visible and p.url_path in eff.allowed
+                  and eff.sources.get(p.url_path) != "default"]
         current_order = current.get("panelOrder") if isinstance(current.get("panelOrder"), list) else []
-        new_order = eff.order if eff.order is not None else current_order
+        base_order = eff.order if eff.order is not None else current_order
+        prev_forced = applied.get("forced", [])
+        new_order = [p for p in base_order if p not in prev_forced or p in forced]
+        new_order += [p for p in forced if p not in new_order]
         new_sidebar = {**current, "panelOrder": new_order, "hiddenPanels": new_hidden}
 
         changed = False
@@ -156,6 +160,7 @@ class PanelEnforcer:
             "hidden": list(eff.hidden),
             "default_panel": target if target is not None else applied.get("default_panel"),
             "order": eff.order is not None,
+            "forced": forced,
         }
         if new_applied != applied or user.id not in self.store.applied:
             self.store.applied[user.id] = new_applied
@@ -185,17 +190,16 @@ class PanelEnforcer:
         if sidebar is not None:
             hidden = restore_hidden(sidebar.get("hiddenPanels") or [], applied.get("hidden", []),
                                     (original or {}).get("hiddenPanels"))
-            seeded = snapshot.get("seeded_hidden") or []
-            if original is None and not [p for p in hidden if p not in seeded] and (
-                applied.get("order") or not sidebar.get("panelOrder")
-            ):
-                # The user never had a stored sidebar and didn't change anything on their own:
-                # go back to Home Assistant's defaults.
+            order = sidebar.get("panelOrder") or []
+            original_order = (original or {}).get("panelOrder") or []
+            if applied.get("order"):
+                order = original_order
+            else:
+                order = [p for p in order if p not in applied.get("forced", []) or p in original_order]
+            if original is None and not hidden and not order:
+                # The user never had a stored sidebar: go back to Home Assistant's defaults.
                 await data.async_set_sidebar(None)
             else:
-                order = sidebar.get("panelOrder") or []
-                if applied.get("order"):
-                    order = (original or {}).get("panelOrder") or []
                 await data.async_set_sidebar({**sidebar, "panelOrder": order, "hiddenPanels": hidden})
         core = data.core
         if applied.get("default_panel") and core.get("default_panel") == applied["default_panel"]:

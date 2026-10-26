@@ -8,7 +8,7 @@
 
 Elegí qué paneles y dashboards ve cada usuario de Home Assistant, desde un único panel solo para administradores.
 
-> **Estado: en desarrollo (0.1.0).** El motor de reglas funciona; el panel gráfico completo y el editor de kiosk vienen a continuación.
+> **Estado: en desarrollo (0.2.0).** Funcionan el motor de reglas y el panel gráfico (resumen, matriz de acceso, usuarios, perfiles, ajustes). Lo próximo: el módulo del navegador (bloquear la edición de la barra, redirigir paneles ocultos) y el editor de kiosk.
 
 ## Cómo funciona
 - Reglas por **usuario** y por **perfil** (por ejemplo *Chicos*, *Invitados*, *Tablet*). Con varios perfiles, los permisos se suman; una regla puesta en el usuario siempre gana.

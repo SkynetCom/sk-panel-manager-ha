@@ -4,6 +4,9 @@
   "after_dependencies": [
     "lovelace"
   ],
+  "categories": [
+    "diy_makers"
+  ],
   "codeowners": [
     "@SkynetCom"
   ],
@@ -20,5 +23,5 @@
   "issue_tracker": "https://github.com/SkynetCom/sk-panel-manager-ha/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "0.1.0"
+  "version": "0.2.0"
 }

@@ -1,0 +1,131 @@
+<!doctype html>
+<!--
+  Standalone UI demo for the SK Panel Manager panel (no Home Assistant needed).
+  Serve the repository root and open /dev/demo.html:
+    python3 -m http.server 8766
+  An in-memory mock of the websocket API uses the same resolver as the panel.
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SK Panel Manager — Demo</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+<style>
+  html, body { margin: 0; height: 100%; background: #f4f6f8; }
+  body.dark { --primary-background-color: #111418; --card-background-color: #1c2026; --primary-text-color: #e6e9ec;
+    --secondary-text-color: #9aa4ae; --divider-color: rgba(255,255,255,.1); --app-header-background-color: #1c2026; }
+  #ctl { position: fixed; right: 10px; bottom: 10px; z-index: 9999; font: 12px system-ui; display: flex; gap: 6px; }
+  #ctl button { padding: 6px 10px; border-radius: 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+</style>
+<script>
+  customElements.define("ha-icon", class extends HTMLElement {
+    static get observedAttributes() { return ["icon"]; }
+    connectedCallback() { this._r(); }
+    attributeChangedCallback() { this._r(); }
+    _r() {
+      if (!this.shadowRoot) this.attachShadow({ mode: "open" });
+      const name = (this.getAttribute("icon") || "").replace("mdi:", "");
+      this.shadowRoot.innerHTML = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+        <style>:host{display:inline-flex;vertical-align:middle;line-height:1}i{font-size:var(--mdc-icon-size,24px);line-height:1}</style><i class="mdi mdi-${name}"></i>`;
+    }
+  });
+  customElements.define("ha-menu-button", class extends HTMLElement {});
+</script>
+</head>
+<body>
+<div id="ctl"><button onclick="document.body.classList.toggle('dark')">🌓</button><button onclick="setLang()">ES/EN</button></div>
+<script type="module">
+import { PANEL_VERSION } from "../custom_components/sk_panel_manager/frontend/skpm-panel.js";
+import { resolve } from "../custom_components/sk_panel_manager/frontend/skpm-resolver.js";
+
+const lang = new URLSearchParams(location.search).get("lang") === "en" ? "en" : "es";
+window.setLang = () => { const u = new URL(location); u.searchParams.set("lang", lang === "en" ? "es" : "en"); location = u; };
+const L = (es, en) => (lang === "en" ? en : es);
+
+const catalog = [
+  ["lovelace", null, null, "dashboard"],
+  ["dashboard-ninos", L("Chicos", "Kids"), "mdi:teddy-bear", "dashboard"],
+  ["dashboard-tablet", L("Tablet cocina", "Kitchen tablet"), "mdi:tablet", "dashboard"],
+  ["dashboard-camaras", L("Cámaras", "Cameras"), "mdi:cctv", "dashboard"],
+  ["light", "light", "mdi:lamps", "builtin", false],
+  ["climate", "climate", "mdi:home-thermometer", "builtin", false],
+  ["security", "security", "mdi:security", "builtin", false],
+  ["energy", "energy", "mdi:lightning-bolt", "builtin"],
+  ["map", "map", "mdi:tooltip-account", "builtin"],
+  ["logbook", "logbook", "mdi:format-list-bulleted-type", "builtin"],
+  ["history", "history", "mdi:chart-box", "builtin"],
+  ["media-browser", "media_browser", "mdi:play-box-multiple", "builtin"],
+  ["todo", "todo", "mdi:clipboard-list", "builtin"],
+  ["sk-irrigation", L("Riego", "Irrigation"), "mdi:sprinkler-variant", "integration"],
+  ["hassio", "hassio", "mdi:puzzle", "addon", true, true],
+  ["a0d7b954_esphome", "ESPHome", "mdi:chip", "addon", true, true],
+].map(([url_path, title, icon, kind, default_visible = true, require_admin = false]) =>
+  ({ url_path, title, icon, kind, default_visible: default_visible !== false, require_admin }));
+
+const titles = { es: { "panel.states": "Resumen", "panel.light": "Luces", "panel.climate": "Clima", "panel.security": "Seguridad",
+    "panel.energy": "Energía", "panel.map": "Mapa", "panel.logbook": "Registro", "panel.history": "Historial",
+    "panel.media_browser": "Multimedia", "panel.todo": "Listas", "panel.hassio": "Complementos" },
+  en: { "panel.states": "Overview", "panel.light": "Lights", "panel.climate": "Climate", "panel.security": "Security",
+    "panel.energy": "Energy", "panel.map": "Map", "panel.logbook": "Logbook", "panel.history": "History",
+    "panel.media_browser": "Media", "panel.todo": "To-do lists", "panel.hassio": "Add-ons" } }[lang];
+
+const users = [
+  { id: "u_owner", name: L("Papá", "Dad"), is_admin: true, is_owner: true, system_generated: false },
+  { id: "u_ana", name: L("Mamá", "Mom"), is_admin: true, is_owner: false, system_generated: false },
+  { id: "u_tomi", name: "Tomás", is_admin: false, is_owner: false, system_generated: false },
+  { id: "u_sofi", name: "Sofía", is_admin: false, is_owner: false, system_generated: false },
+  { id: "u_tablet", name: L("Tablet cocina", "Kitchen tablet"), is_admin: false, is_owner: false, system_generated: false },
+  { id: "u_guest", name: L("Invitados", "Guests"), is_admin: false, is_owner: false, system_generated: false },
+  { id: "u_jardinero", name: L("Jardinero", "Gardener"), is_admin: false, is_owner: false, system_generated: false },
+];
+
+let config = {
+  settings: { default_access: "allow", restrict_admins: false, lock_sidebar_editing: true, redirect_forbidden: true },
+  profiles: {
+    p_kids: { name: L("Chicos", "Kids"), icon: "mdi:human-child", color: "#2e9e6b",
+      panels: { "dashboard-ninos": "allow", energy: "deny", logbook: "deny", history: "deny", "dashboard-camaras": "deny", "sk-irrigation": "deny", map: "deny" },
+      panel_order: ["dashboard-ninos", "media-browser"], default_panel: "dashboard-ninos", kiosk: null },
+    p_wall: { name: L("Tablet de pared", "Wall tablet"), icon: "mdi:tablet-dashboard", color: "#3f51cd",
+      panels: { lovelace: "deny", "dashboard-tablet": "allow", energy: "deny", logbook: "deny", history: "deny", map: "deny", todo: "allow", "media-browser": "deny", "dashboard-ninos": "deny", "dashboard-camaras": "deny", "sk-irrigation": "deny" },
+      panel_order: null, default_panel: "dashboard-tablet", kiosk: null },
+    p_guest: { name: L("Invitados", "Guests"), icon: "mdi:account-clock", color: "#f2a900",
+      panels: { energy: "deny", logbook: "deny", history: "deny", map: "deny", "dashboard-camaras": "deny", "sk-irrigation": "deny", todo: "deny", "dashboard-ninos": "deny" },
+      panel_order: null, default_panel: null, kiosk: null },
+  },
+  users: {
+    u_tomi: { profiles: ["p_kids"], panels: {}, panel_order: null, default_panel: null, kiosk: null, managed: true },
+    u_sofi: { profiles: ["p_kids"], panels: { "media-browser": "deny" }, panel_order: null, default_panel: null, kiosk: null, managed: true },
+    u_tablet: { profiles: ["p_wall"], panels: {}, panel_order: null, default_panel: null, kiosk: null, managed: true },
+    u_guest: { profiles: ["p_guest"], panels: {}, panel_order: null, default_panel: null, kiosk: null, managed: true },
+    u_jardinero: { profiles: ["p_guest"], panels: { "sk-irrigation": "allow", lovelace: "deny", "dashboard-tablet": "deny" }, panel_order: ["sk-irrigation"], default_panel: "sk-irrigation", kiosk: null, managed: true },
+  },
+  kiosk: null,
+};
+
+const payload = () => ({
+  version: PANEL_VERSION, config: JSON.parse(JSON.stringify(config)), catalog, users,
+  effective: Object.fromEntries(users.map((u) => [u.id, resolve(config, u, catalog)])),
+});
+
+const hass = {
+  language: lang,
+  localize: (k) => titles[k] || "",
+  async callWS(msg) {
+    await new Promise((r) => setTimeout(r, 250));
+    if (msg.type === "sk_panel_manager/config") return payload();
+    if (msg.type === "sk_panel_manager/config/save") { config = JSON.parse(JSON.stringify(msg.config)); return payload(); }
+    throw new Error(`Unknown command ${msg.type}`);
+  },
+};
+
+const el = document.createElement("sk-panel-manager-panel");
+el.panel = { config: { version: PANEL_VERSION } };
+el.narrow = window.innerWidth < 870;
+el.hass = hass;
+document.body.appendChild(el);
+const tab = new URLSearchParams(location.search).get("tab");
+if (tab) setTimeout(() => el.shadowRoot.querySelector(`[data-tab="${tab}"]`)?.click(), 400);
+</script>
+</body>
+</html>

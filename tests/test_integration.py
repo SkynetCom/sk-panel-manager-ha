@@ -62,9 +62,7 @@ async def test_hides_panels_and_reapplies_when_user_edits(hass: HomeAssistant):
     await _save(hass, enforcer, {"users": {kid.id: {"panels": {"energy-dash": "deny"}}}})
 
     store = await _store(hass, kid.id)
-    # Panels Home Assistant hides by default (built-in dashboards) stay hidden.
-    defaults = [p.url_path for p in enforcer.catalog() if not p.default_visible]
-    assert store.data["sidebar"]["hiddenPanels"] == [*defaults, "energy-dash"]
+    assert store.data["sidebar"]["hiddenPanels"] == ["energy-dash"]
 
     # The kid un-hides energy and hides the kids dashboard from their profile.
     await store.async_set_item("sidebar", {"panelOrder": [], "hiddenPanels": ["dashboard-kids"]})
@@ -134,6 +132,22 @@ async def test_release_user_without_stored_sidebar_goes_back_to_defaults(hass: H
     await _save(hass, enforcer, {"users": {kid.id: {"managed": False}}})
     assert store.data["sidebar"] is None
     assert enforcer.store.applied == {} and enforcer.store.snapshots == {}
+
+
+async def test_explicit_allow_shows_panel_hidden_by_default(hass: HomeAssistant):
+    kid = await _kid(hass)
+    _, enforcer = await _setup(hass)
+    frontend.async_register_built_in_panel(hass, "lovelace", "Lights", "mdi:lamps", frontend_url_path="lights-x",
+                                           sidebar_default_visible=False)
+    await _save(hass, enforcer, {})
+    store = await _store(hass, kid.id)
+    assert "lights-x" not in (store.data.get("sidebar") or {}).get("panelOrder", [])  # HA keeps it hidden
+    await _save(hass, enforcer, {"users": {kid.id: {"panels": {"lights-x": "allow"}}}})
+    assert "lights-x" in store.data["sidebar"]["panelOrder"]  # shown
+    await _save(hass, enforcer, {"users": {kid.id: {"panels": {}}}})
+    assert "lights-x" not in store.data["sidebar"]["panelOrder"]  # back to HA's default
+    await _save(hass, enforcer, {"users": {kid.id: {"managed": False}}})
+    assert store.data["sidebar"] is None
 
 
 async def test_new_panel_follows_default_access(hass: HomeAssistant):
