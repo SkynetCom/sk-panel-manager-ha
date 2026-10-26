@@ -1,0 +1,92 @@
+<!doctype html>
+<!--
+  Test page for the browser module (skpm-runtime.js) without Home Assistant.
+  Serve the repository root and open /dev/runtime.html:
+    python3 -m http.server 8766
+  A fake <home-assistant> element opens dialogs and shows notifications like the real one,
+  and a fake connection pushes the user's rules.
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SK Panel Manager — Runtime test</title>
+<style>
+  body { font: 14px system-ui, sans-serif; margin: 24px; background: #f4f6f8; color: #1b2733; }
+  button { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; margin: 4px 4px 4px 0; }
+  .box { background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; max-width: 720px; }
+  #log div { font-family: ui-monospace, monospace; font-size: 12px; padding: 2px 0; }
+  #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1f2937; color: #fff; padding: 10px 16px; border-radius: 10px; display: none; }
+  code { background: #eef; padding: 1px 6px; border-radius: 6px; }
+</style>
+</head>
+<body>
+<home-assistant></home-assistant>
+<div class="box"><b>Panel actual:</b> <code id="where"></code></div>
+<div class="box">
+  <b>Reglas del usuario</b><br>
+  <button data-rules="managed">Gestionado (oculta Energía y Mapa, entra en Chicos)</button>
+  <button data-rules="unlocked">Gestionado sin bloqueo ni redirección</button>
+  <button data-rules="free">No gestionado</button>
+</div>
+<div class="box">
+  <b>Acciones</b><br>
+  <button id="edit">Abrir “Editar barra lateral”</button>
+  <button data-go="energy">Ir a /energy (oculto)</button>
+  <button data-go="map">Ir a /map (oculto)</button>
+  <button data-go="dashboard-ninos">Ir a /dashboard-ninos</button>
+  <button data-go="profile">Ir a /profile</button>
+</div>
+<div class="box"><b>Registro</b><div id="log"></div></div>
+<div id="toast"></div>
+<script>
+  const log = (t) => { const d = document.createElement("div"); d.textContent = `${new Date().toLocaleTimeString()}  ${t}`; document.getElementById("log").prepend(d); };
+  const RULES = {
+    managed: { managed: true, reason: null, allowed: ["lovelace", "dashboard-ninos", "todo"], hidden: ["energy", "map"], order: ["dashboard-ninos"],
+      default_panel: "dashboard-ninos", sources: {}, settings: { lock_sidebar_editing: true, redirect_forbidden: true } },
+    unlocked: { managed: true, reason: null, allowed: ["lovelace", "dashboard-ninos"], hidden: ["energy", "map"], order: null,
+      default_panel: null, sources: {}, settings: { lock_sidebar_editing: false, redirect_forbidden: false } },
+    free: { managed: false, reason: "admin", allowed: [], hidden: [], order: null, default_panel: null, sources: {}, settings: {} },
+  };
+
+  // Fake <home-assistant>: handles show-dialog and hass-notification like the real app (bubble phase).
+  customElements.define("home-assistant", class extends HTMLElement {
+    constructor() {
+      super();
+      this.hass = { language: "es" };
+      const inner = document.createElement("div");
+      this.attachShadow({ mode: "open" }).appendChild(inner);
+      this.inner = inner;
+      this.addEventListener("show-dialog", (e) => { window.__dialogs = (window.__dialogs || 0) + 1; log(`Diálogo abierto: ${e.detail.dialogTag}`); });
+      this.addEventListener("hass-notification", (e) => {
+        window.__notes = [...(window.__notes || []), e.detail.message];
+        const t = document.getElementById("toast"); t.textContent = e.detail.message; t.style.display = "block";
+        clearTimeout(this._t); this._t = setTimeout(() => { t.style.display = "none"; }, 2500);
+      });
+    }
+  });
+
+  let push = null;
+  window.__setRules = (key) => { push && push(RULES[key]); log(`Reglas: ${key}`); };
+  window.hassConnection = new Promise((resolve) => setTimeout(() => resolve({
+    conn: { subscribeMessage: async (cb, msg) => { push = cb; log(`Suscripto a ${msg.type}`); cb(RULES.managed); return () => {}; } },
+  }), 300));
+
+  const show = () => { document.getElementById("where").textContent = location.pathname; };
+  window.addEventListener("location-changed", show);
+  window.__go = (panel) => { history.pushState(null, "", `/${panel}`); window.dispatchEvent(new CustomEvent("location-changed")); };
+  // Opened from deep inside the app, like the sidebar or the profile page do.
+  window.__openEdit = () => document.querySelector("home-assistant").inner.dispatchEvent(new CustomEvent("show-dialog", {
+    detail: { dialogTag: "dialog-edit-sidebar", dialogParams: {} }, bubbles: true, composed: true }));
+
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.rules) __setRules(b.dataset.rules);
+    if (b.dataset.go) __go(b.dataset.go);
+    if (b.id === "edit") __openEdit();
+  });
+  show();
+</script>
+<script src="../custom_components/sk_panel_manager/frontend/skpm-runtime.js"></script>
+</body>
+</html>

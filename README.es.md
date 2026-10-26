@@ -8,7 +8,7 @@
 
 Elegí qué paneles y dashboards ve cada usuario de Home Assistant, desde un único panel solo para administradores.
 
-> **Estado: en desarrollo (0.2.0).** Funcionan el motor de reglas y el panel gráfico (resumen, matriz de acceso, usuarios, perfiles, ajustes). Lo próximo: el módulo del navegador (bloquear la edición de la barra, redirigir paneles ocultos) y el editor de kiosk.
+> **Estado: en desarrollo (0.3.0).** Funcionan el motor de reglas, el panel gráfico y el módulo del navegador. Lo próximo: el editor de kiosk.
 
 ## Cómo funciona
 - Reglas por **usuario** y por **perfil** (por ejemplo *Chicos*, *Invitados*, *Tablet*). Con varios perfiles, los permisos se suman; una regla puesta en el usuario siempre gana.
@@ -19,6 +19,7 @@ Elegí qué paneles y dashboards ve cada usuario de Home Assistant, desde un ún
 ## Qué protege y qué no
 - ✅ Oculta paneles de la barra lateral de cada usuario y los mantiene ocultos.
 - ✅ Fija el dashboard por defecto de cada usuario.
+- ✅ Si se abre un panel oculto por su dirección, el usuario va a su dashboard por defecto, y los usuarios gestionados no pueden editar su barra desde el perfil (las dos cosas son opcionales).
 - ❌ **No es un control de acceso.** Un usuario con conocimientos técnicos igual puede leer la configuración de cualquier dashboard y el estado de las entidades por la API de Home Assistant. Para datos sensibles, usá dashboards solo para administradores o usuarios separados.
 
 ## Requisitos

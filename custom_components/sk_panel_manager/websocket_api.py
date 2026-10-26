@@ -125,9 +125,15 @@ async def ws_subscribe(hass: HomeAssistant, connection: websocket_api.ActiveConn
     user_id = connection.user.id
 
     async def _send() -> None:
+        # Look the enforcer up each time: reloading the integration replaces it.
+        current = _enforcer(hass)
+        if current is None:
+            # Integration unloaded or removed: the browser stops applying rules.
+            connection.send_message(websocket_api.event_message(msg["id"], {"managed": False, "reason": "not_loaded"}))
+            return
         user = await async_user(hass, user_id)
         if user is not None:
-            connection.send_message(websocket_api.event_message(msg["id"], _runtime(enforcer, user)))
+            connection.send_message(websocket_api.event_message(msg["id"], _runtime(current, user)))
 
     @callback
     def _changed(changed_user: str | None) -> None:

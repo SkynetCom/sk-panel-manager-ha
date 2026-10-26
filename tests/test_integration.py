@@ -202,3 +202,23 @@ async def test_websocket_permissions(hass: HomeAssistant, hass_ws_client, hass_a
     while event["event"]["hidden"]:  # a first event may still carry the old rules
         event = await user.receive_json()
     assert event["event"]["hidden"] == []
+
+
+async def test_runtime_module_loaded_and_released_on_unload(hass: HomeAssistant, hass_ws_client,
+                                                            hass_read_only_user, hass_read_only_access_token):
+    from homeassistant.components.frontend import DATA_EXTRA_MODULE_URL
+
+    entry, enforcer = await _setup(hass)
+    assert any("skpm-runtime.js" in url for url in hass.data[DATA_EXTRA_MODULE_URL].urls)
+    await _save(hass, enforcer, {"users": {hass_read_only_user.id: {"panels": {"energy-dash": "deny"}}}})
+
+    user = await hass_ws_client(hass, hass_read_only_access_token)
+    await user.send_json_auto_id({"type": f"{DOMAIN}/subscribe"})
+    assert (await user.receive_json())["success"]
+    assert (await user.receive_json())["event"]["managed"] is True
+
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert not any("skpm-runtime.js" in url for url in hass.data[DATA_EXTRA_MODULE_URL].urls)
+    event = await user.receive_json()
+    assert event["event"] == {"managed": False, "reason": "not_loaded"}

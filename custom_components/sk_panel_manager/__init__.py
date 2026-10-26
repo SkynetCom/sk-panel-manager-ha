@@ -9,6 +9,7 @@ from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.typing import ConfigType
 
 from .const import (
@@ -17,6 +18,7 @@ from .const import (
     PANEL_COMPONENT,
     PANEL_ICON,
     PANEL_URL_PATH,
+    SIGNAL_EFFECTIVE_CHANGED,
     STATIC_URL,
     VERSION,
     default_sidebar_title,
@@ -26,6 +28,8 @@ from .store import PanelManagerStore
 from .websocket_api import async_register_websocket
 
 _LOGGER = logging.getLogger(__name__)
+# Loaded on every page: locks sidebar editing and redirects hidden panels.
+RUNTIME_URL = f"{STATIC_URL}/skpm-runtime.js?v={VERSION}"
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -60,6 +64,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         domain_data["ws_registered"] = True
 
     await _async_register_panel(hass, entry)
+    frontend.add_extra_js_url(hass, RUNTIME_URL)
     await enforcer.async_start()
     entry.async_on_unload(entry.add_update_listener(_async_reload))
     return True
@@ -88,7 +93,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     enforcer: PanelEnforcer = entry.runtime_data
     await enforcer.async_stop()
     frontend.async_remove_panel(hass, PANEL_URL_PATH, warn_if_unknown=False)
+    frontend.remove_extra_js_url(hass, RUNTIME_URL)
     hass.data[DOMAIN].pop("enforcer", None)
+    async_dispatcher_send(hass, SIGNAL_EFFECTIVE_CHANGED, None)  # open browsers stop applying rules
     return True
 
 

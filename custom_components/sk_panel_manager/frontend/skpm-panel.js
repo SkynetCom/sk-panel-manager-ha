@@ -1,13 +1,13 @@
 // SK Panel Manager — admin panel.
 // Dependency-free web component: renders with template strings, uses event delegation
 // and pointer-based drag & drop (mouse + touch), like SK Irrigation Manager.
-import { translator } from "./skpm-i18n.js?v=0.2.0";
-import { STYLES } from "./skpm-styles.js?v=0.2.0";
-import { resolve } from "./skpm-resolver.js?v=0.2.0";
+import { translator } from "./skpm-i18n.js?v=0.3.0";
+import { STYLES } from "./skpm-styles.js?v=0.3.0";
+import { resolve } from "./skpm-resolver.js?v=0.3.0";
 
 const DOMAIN = "sk_panel_manager";
 // Version of this file; compared with the installed integration to spot a stale browser cache.
-export const PANEL_VERSION = "0.2.0";
+export const PANEL_VERSION = "0.3.0";
 const TABS = [
   ["overview", "mdi:view-dashboard-outline"],
   ["matrix", "mdi:table-check"],
@@ -590,8 +590,8 @@ class SkPanelManagerPanel extends HTMLElement {
         ${opt("allow", "mdi:eye-check-outline", t("s_allow"), t("s_allow_sub"))}${opt("deny", "mdi:eye-lock-outline", t("s_deny"), t("s_deny_sub"))}</div></div>
       <div class="card"><div class="body" style="padding-top:2px;padding-bottom:2px">
         ${sw("restrict_admins", t("s_admins"), t("s_admins_sub"))}
-        ${sw("lock_sidebar_editing", t("s_lock"), t("s_lock_sub"), true)}
-        ${sw("redirect_forbidden", t("s_redirect"), t("s_redirect_sub"), true)}</div></div>
+        ${sw("lock_sidebar_editing", t("s_lock"), t("s_lock_sub"))}
+        ${sw("redirect_forbidden", t("s_redirect"), t("s_redirect_sub"))}</div></div>
       <div class="card"><div class="head">${icon("mdi:shield-alert-outline")}<h2>${esc(t("s_security"))}</h2></div><div class="body"><ul class="sec">
         <li>${icon("mdi:check-circle")}<span>${esc(t("s_sec_1"))}</span></li>
         <li>${icon("mdi:check-circle")}<span>${esc(t("s_sec_2"))}</span></li>

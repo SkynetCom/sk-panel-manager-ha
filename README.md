@@ -8,7 +8,7 @@
 
 Choose which panels and dashboards each Home Assistant user sees, from one admin-only panel.
 
-> **Status: in development (0.2.0).** Rules engine and graphical admin panel (overview, access matrix, users, profiles, settings) work. Next: the browser module (lock sidebar editing, redirect hidden panels) and the kiosk editor.
+> **Status: in development (0.3.0).** Rules engine, graphical admin panel and browser module work. Next: the kiosk editor.
 
 ## How it works
 - Rules per **user** and per **profile** (for example *Kids*, *Guests*, *Tablet*). With several profiles, permissions add up; a rule set on the user always wins.
@@ -19,6 +19,7 @@ Choose which panels and dashboards each Home Assistant user sees, from one admin
 ## What it protects and what it doesn't
 - ✅ Hides panels from each user's sidebar and keeps them hidden.
 - ✅ Sets each user's default dashboard.
+- ✅ Opening a hidden panel by its address sends the user to their default dashboard, and managed users can't edit their sidebar from their profile (both optional).
 - ❌ **It is not access control.** A user with technical knowledge can still read any dashboard's configuration and the state of entities through Home Assistant's API. For sensitive data, use admin-only dashboards or separate users.
 
 ## Requirements

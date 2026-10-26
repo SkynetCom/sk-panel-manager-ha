@@ -3,7 +3,7 @@ from __future__ import annotations
 
 DOMAIN = "sk_panel_manager"
 NAME = "SK Panel Manager"
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 
 STORAGE_KEY = f"{DOMAIN}.data"
 STORAGE_VERSION = 1
