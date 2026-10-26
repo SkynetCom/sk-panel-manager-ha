@@ -120,7 +120,7 @@ label.field { display: grid; gap: 6px; font-size: 12px; color: var(--pm-muted); 
 .alert.bad ha-icon { color: var(--pm-red); }
 
 /* matrix */
-.mwrap { overflow: auto; max-height: calc(100vh - 230px); border-radius: var(--pm-radius); }
+.mwrap { overflow: auto; max-height: calc(100vh - 300px); min-height: 260px; border-radius: var(--pm-radius); }
 table.matrix { border-collapse: separate; border-spacing: 0; min-width: 100%; }
 .matrix th, .matrix td { border-bottom: 1px solid var(--pm-line); padding: 0; background: var(--pm-card); }
 .matrix thead th { position: sticky; z-index: 2; }
@@ -147,6 +147,10 @@ table.matrix { border-collapse: separate; border-spacing: 0; min-width: 100%; }
 .cell .dot.allow.inh { background: var(--pm-green-soft); color: var(--pm-green); }
 .cell .dot.deny.inh { background: var(--pm-red-soft); color: var(--pm-red); }
 .cell .dot.none { border: 1.5px dashed var(--pm-line); }
+.cell.flash .dot { animation: cellflash .6s ease-out; }
+@keyframes cellflash { 0% { transform: scale(1.35); box-shadow: 0 0 0 6px color-mix(in srgb, var(--pm-primary) 30%, transparent); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; } }
+.matrix tbody tr:has(.cell.flash) th { box-shadow: inset 3px 0 0 var(--pm-primary); }
 .cell.na, .cell.off { cursor: default; }
 .cell.na .dot, .cell.off .dot { opacity: .35; }
 .legend { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 12px; font-size: 13px; color: var(--pm-muted); }

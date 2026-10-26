@@ -8,7 +8,6 @@
   **profiles** (name, icon, color, members, rules, order) and **settings**. English and Spanish, light and dark themes, phone layout.
 - Panels Home Assistant hides by default (Lights, Climate, Security…) stay hidden unless a rule explicitly shows them.
 - Panel catalog grouped by kind: dashboards, Home Assistant, integrations, add-ons.
-- `categories` in the manifest.
 
 ## 0.1.0 — 2026-10-26
 - Rules engine: per-user and per-profile rules, default access, sidebar and default dashboard written to Home Assistant's

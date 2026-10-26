@@ -9,7 +9,6 @@
   Inglés y español, tema claro y oscuro, vista de celular.
 - Los paneles que Home Assistant oculta por defecto (Luces, Clima, Seguridad…) siguen ocultos salvo que una regla los muestre.
 - Catálogo de paneles agrupado por tipo: dashboards, Home Assistant, integraciones, complementos.
-- `categories` en el manifest.
 
 ## 0.1.0 — 2026-10-26
 - Motor de reglas: reglas por usuario y por perfil, acceso por defecto, barra lateral y dashboard por defecto escritos en el

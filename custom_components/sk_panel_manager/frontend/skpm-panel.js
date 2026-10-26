@@ -186,6 +186,9 @@ class SkPanelManagerPanel extends HTMLElement {
     const caret = focus && "selectionStart" in focus ? focus.selectionStart : null;
     const scroller = root.querySelector(".scroller");
     const top = scroller.scrollTop;
+    // Inner scroll areas (the matrix) are rebuilt too: keep where they were.
+    const kept = {};
+    root.querySelectorAll("[data-keep]").forEach((el) => { kept[el.dataset.keep] = [el.scrollLeft, el.scrollTop]; });
 
     root.querySelectorAll(".tab").forEach((b) => {
       b.classList.toggle("active", b.dataset.tab === this._tab);
@@ -211,7 +214,15 @@ class SkPanelManagerPanel extends HTMLElement {
     this._renderOverlay();
 
     scroller.scrollTop = top;
-    if (this._refocus) {
+    root.querySelectorAll("[data-keep]").forEach((el) => {
+      const pos = kept[el.dataset.keep];
+      if (pos) [el.scrollLeft, el.scrollTop] = pos;
+    });
+    this._flash = null;
+    if (this._refocusCell) {
+      root.querySelector(this._refocusCell)?.focus({ preventScroll: true });
+      this._refocusCell = null;
+    } else if (this._refocus) {
       root.querySelector(`.sort .si[data-id="${CSS.escape(this._refocus)}"]`)?.focus({ preventScroll: true });
       this._refocus = null;
     } else if (focusKey) {
@@ -326,7 +337,8 @@ class SkPanelManagerPanel extends HTMLElement {
       const cells = cols.map((c) => {
         const v = p.panels[c.url_path];
         const title = t("cell_title", { panel: this._ptitle(c.url_path), who: p.name, state: t(`state_${v || "none"}`), src: t("profiles") });
-        return `<td><button class="cell" data-action="cycle-profile" data-pid="${esc(pid)}" data-panel="${esc(c.url_path)}" title="${esc(title)}" aria-label="${esc(title)}">${dot(v || "none", stateIcon(v))}</button></td>`;
+        const flash = this._flash === `p:${pid}:${c.url_path}` ? "flash" : "";
+        return `<td><button class="cell ${flash}" data-action="cycle-profile" data-pid="${esc(pid)}" data-panel="${esc(c.url_path)}" title="${esc(title)}" aria-label="${esc(title)}">${dot(v || "none", stateIcon(v))}</button></td>`;
       }).join("");
       return `<tr><th><div class="who"><span class="icon-box" style="--c:${p.color || colorFor(pid)};width:30px;height:30px">${icon(p.icon)}</span>
         <div style="min-width:0"><div class="n">${esc(p.name)}</div><div class="s">${esc(t("member_count", { n: members }))}</div></div></div></th>${cells}</tr>`;
@@ -345,7 +357,8 @@ class SkPanelManagerPanel extends HTMLElement {
         const access = e.shown.includes(c.url_path) ? "allow" : "deny";
         const src = this._srcText(e.sources[c.url_path], c.url_path, e);
         const title = t("cell_title", { panel: this._ptitle(c.url_path), who: u.name, state: t(`state_${access}`), src });
-        return `<td><button class="cell" data-action="cycle-user" data-uid="${esc(u.id)}" data-panel="${esc(c.url_path)}" title="${esc(title)}" aria-label="${esc(title)}">${dot(`${access} ${own ? "" : "inh"}`, stateIcon(access))}</button></td>`;
+        const flash = this._flash === `u:${u.id}:${c.url_path}` ? "flash" : "";
+        return `<td><button class="cell ${flash}" data-action="cycle-user" data-uid="${esc(u.id)}" data-panel="${esc(c.url_path)}" title="${esc(title)}" aria-label="${esc(title)}">${dot(`${access} ${own ? "" : "inh"}`, stateIcon(access))}</button></td>`;
       }).join("");
       return `<tr><th><div class="who">${this._avatar(u, "sm")}<div style="min-width:0"><div class="n">${esc(u.name)}</div><div class="s">${esc(sub)}</div></div></div></th>${cells}</tr>`;
     }).join("");
@@ -357,7 +370,7 @@ class SkPanelManagerPanel extends HTMLElement {
         <span class="cell">${dot("none", "mdi:lock")}${esc(t("legend_na"))}</span>
         <span class="spacer"></span><span>${esc(t("matrix_hint"))}</span>
       </div>
-      <div class="card mwrap"><table class="matrix">
+      <div class="card mwrap" data-keep="matrix"><table class="matrix">
         <thead>
           <tr class="kinds"><th class="corner"></th>${kinds.map(([k, n]) => `<th colspan="${n}">${esc(t(`kind_${k}`))}</th>`).join("")}</tr>
           <tr class="cols"><th class="corner"></th>${cols.map((c) => `<th><div class="colhead" title="${esc(c.url_path)}">${icon(this._picon(c.url_path))}<span>${esc(this._ptitle(c.url_path))}</span>${c.default_visible ? "" : `<em>${esc(t("ha_hidden_short"))}</em>`}</div></th>`).join("")}</tr>
@@ -609,12 +622,16 @@ class SkPanelManagerPanel extends HTMLElement {
       case "sel-user": this._selUser = d.uid; break;
       case "sel-profile": this._selProfile = d.pid; break;
       case "cycle-profile": {
+        this._flash = `p:${d.pid}:${d.panel}`;
+        this._refocusCell = `[data-action="cycle-profile"][data-pid="${CSS.escape(d.pid)}"][data-panel="${CSS.escape(d.panel)}"]`;
         const panels = this._draft.profiles[d.pid].panels;
         const next = cycle[panels[d.panel]];
         if (next) panels[d.panel] = next; else delete panels[d.panel];
         break;
       }
       case "cycle-user": {
+        this._flash = `u:${d.uid}:${d.panel}`;
+        this._refocusCell = `[data-action="cycle-user"][data-uid="${CSS.escape(d.uid)}"][data-panel="${CSS.escape(d.panel)}"]`;
         const panels = this._ucfg(d.uid).panels;
         const next = cycle[panels[d.panel]];
         if (next) panels[d.panel] = next; else delete panels[d.panel];

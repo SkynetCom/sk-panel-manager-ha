@@ -4,9 +4,6 @@
   "after_dependencies": [
     "lovelace"
   ],
-  "categories": [
-    "diy_makers"
-  ],
   "codeowners": [
     "@SkynetCom"
   ],
