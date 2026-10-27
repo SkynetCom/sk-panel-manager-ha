@@ -24,7 +24,7 @@ export const I18N = {
     legend_allow: "Shown", legend_deny: "Hidden", legend_inherit: "Inherited (faded)", legend_na: "Admin-only panel",
     profiles: "Profiles", users: "Users",
     kind_dashboard: "Dashboards", kind_builtin: "Home Assistant", kind_integration: "Integrations", kind_addon: "Add-ons",
-    from_default: "default rule", from_profile: "profile {p}", from_user: "set on the user", from_ha_default: "hidden by default in Home Assistant", ha_hidden_short: "hidden by HA",
+    from_default: "default rule", from_profile: "profile {p}", from_user: "set on the user", from_ha_default: "hidden by default in Home Assistant", from_ha_main: "Home Assistant only lists it while it's the default dashboard (it still opens)", ha_hidden_short: "hidden by HA",
     cell_title: "{panel} for {who}: {state} ({src})", state_allow: "shown", state_deny: "hidden", state_none: "no rule",
     // users
     search_users: "Search users", managed_toggle: "Managed by Panel Manager",
@@ -135,7 +135,7 @@ export const I18N = {
     legend_allow: "Visible", legend_deny: "Oculto", legend_inherit: "Heredado (tenue)", legend_na: "Panel solo para admins",
     profiles: "Perfiles", users: "Usuarios",
     kind_dashboard: "Dashboards", kind_builtin: "Home Assistant", kind_integration: "Integraciones", kind_addon: "Complementos",
-    from_default: "regla por defecto", from_profile: "perfil {p}", from_user: "puesto en el usuario", from_ha_default: "oculto por defecto en Home Assistant", ha_hidden_short: "oculto por HA",
+    from_default: "regla por defecto", from_profile: "perfil {p}", from_user: "puesto en el usuario", from_ha_default: "oculto por defecto en Home Assistant", from_ha_main: "Home Assistant solo lo muestra cuando es el dashboard por defecto (igual se abre)", ha_hidden_short: "oculto por HA",
     cell_title: "{panel} para {who}: {state} ({src})", state_allow: "visible", state_deny: "oculto", state_none: "sin regla",
     search_users: "Buscar usuarios", managed_toggle: "Gestionado por el Gestor de paneles",
     managed_toggle_sub: "Apagado: el usuario conserva su propia barra lateral (se deshace lo aplicado).",

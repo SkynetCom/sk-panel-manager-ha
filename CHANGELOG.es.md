@@ -6,6 +6,11 @@
 Primera versión estable.
 - **Diagnóstico:** *Ajustes → Dispositivos y servicios → SK Panel Manager → ⋮ → Descargar diagnóstico* ahora incluye las reglas
   y su efecto, sin nombres ni ids de usuarios ni nombres de dispositivos. Adjuntalo cuando reportes un problema.
+- Las vistas previas (Usuarios, Ver como…) muestran que Home Assistant solo lista el dashboard principal (*Resumen*) cuando
+  es el dashboard por defecto del usuario, igual que la barra real; *Ver como…* redirige con la misma regla que el módulo del navegador.
+- Probado de punta a punta en un Home Assistant real con un usuario no administrador: paneles ocultos, dashboard por defecto,
+  redirección, bloqueo de la edición de la barra (botón *Editar* del perfil), cambios hechos por la API que vuelven a su lugar,
+  opciones de kiosk, y sin acceso al panel de administración ni a sus comandos.
 - A un usuario sin barra guardada y sin reglas que aplicar ya no se le escribe nada: instalar la integración no toca la barra
   de nadie hasta que una regla lo necesite.
 

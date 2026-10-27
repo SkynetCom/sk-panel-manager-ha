@@ -6,6 +6,11 @@
 First stable release.
 - **Diagnostics:** *Settings → Devices & services → SK Panel Manager → ⋮ → Download diagnostics* now includes the rules and
   their effect, with user names, ids and device names left out. Attach it when you report a problem.
+- Previews (Users, View as…) show that Home Assistant only lists the main dashboard (*Overview*) while it's the user's
+  default dashboard, exactly like the real sidebar; *View as…* redirects with the same rule as the browser module.
+- Checked end to end in a real Home Assistant signed in as a non-admin user: hidden panels, default dashboard, redirection,
+  locked sidebar editing (the profile's *Edit* button), changes made through the API put back, kiosk options, and no access
+  to the admin panel or its commands.
 - A user with no stored sidebar and no rule to enforce is no longer written to: installing the integration doesn't touch
   anyone's sidebar until a rule needs it.
 

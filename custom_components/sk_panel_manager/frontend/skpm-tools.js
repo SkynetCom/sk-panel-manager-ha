@@ -32,7 +32,8 @@ export const ToolsMixin = (Base) => class extends Base {
       </div></div>`;
 
     // What happens when the user opens the chosen dashboard.
-    const hidden = !e.shown.includes(panel) && e.managed;
+    // Same rule as the browser module: only panels a rule hides are redirected.
+    const hidden = e.managed && e.hidden.includes(panel);
     const redirect = hidden && this._draft.settings.redirect_forbidden;
     const opened = redirect ? landing : panel;
     const kiosk = resolveKioskFor(this._draft, u, device, opened);

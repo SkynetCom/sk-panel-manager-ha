@@ -138,6 +138,8 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
     const e = resolve(this._draft, user, this._catalog);
     // Panels Home Assistant hides by default (Lights, Climate...) only show with an explicit rule.
     e.shown = e.allowed.filter((id) => !(this._panels.get(id)?.default_visible === false && e.sources[id] === "default"));
+    // The main dashboard has no title: Home Assistant only lists it while it's the user's default.
+    if (e.default_panel && e.default_panel !== "lovelace") e.shown = e.shown.filter((id) => this._panels.get(id)?.title != null);
     return e;
   }
 
@@ -157,7 +159,9 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
   }
 
   _srcText(src, panel, e) {
-    if (panel && e && e.allowed.includes(panel) && !e.shown.includes(panel)) return this.t("from_ha_default");
+    if (panel && e && e.allowed.includes(panel) && !e.shown.includes(panel)) {
+      return this.t(this._panels.get(panel)?.title == null ? "from_ha_main" : "from_ha_default");
+    }
     if (src === "user") return this.t("from_user");
     if (src === "default") return this.t("from_default");
     const pid = src.split(":")[1];
