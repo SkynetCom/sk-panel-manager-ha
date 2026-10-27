@@ -7,7 +7,7 @@ BASE="${BASE:-http://localhost:8766}"
 OUT="$(cd "$(dirname "$0")/.." && pwd)/docs"
 
 shot() { # name size url
-  "$CHROME" --headless=new --hide-scrollbars --disable-gpu --force-device-scale-factor=${SCALE:-2} \
+  "$CHROME" --headless=new --hide-scrollbars --disable-gpu --force-device-scale-factor=${SCALE:-1.5} \
     --window-size="$2" --virtual-time-budget=8000 --screenshot="$OUT/$1" "$BASE/$3" >/dev/null 2>&1
   echo "docs/$1"
 }
@@ -15,7 +15,7 @@ shot() { # name size url
 for lang in en es; do
   sfx=$([ "$lang" = en ] && echo "" || echo ".es")
   shot "overview$sfx.png" 1440,900  "dev/demo.html?shot=1&lang=$lang&tab=overview"
-  shot "matrix$sfx.png"   1440,860  "dev/demo.html?shot=1&lang=$lang&tab=matrix"
+  shot "matrix$sfx.png"   1440,880  "dev/demo.html?shot=1&lang=$lang&tab=matrix"
   shot "user$sfx.png"     1440,1180 "dev/demo.html?shot=1&lang=$lang&tab=users&user=u_tomi"
   shot "profile$sfx.png"  1440,1100 "dev/demo.html?shot=1&lang=$lang&tab=profiles&profile=p_wall"
   shot "kiosk$sfx.png"    1440,1240 "dev/demo.html?shot=1&lang=$lang&tab=kiosk&layer=profile:p_kids&scope=dashboard-ninos"
@@ -26,3 +26,11 @@ for lang in en es; do
   shot "flow$sfx.png"     1600,600  "docs/src/flow.html?lang=$lang"
   shot "banner$sfx.png"   1280,640  "docs/src/banner.html?lang=$lang"
 done
+
+# Compress (same engine as TinyPNG). Install with: brew install pngquant
+if command -v pngquant >/dev/null 2>&1; then
+  for f in "$OUT"/*.png; do
+    pngquant --quality=85-98 --speed 1 --strip --skip-if-larger --force --output "$f" "$f" 2>/dev/null || true
+  done
+  echo "compressed with pngquant"
+fi

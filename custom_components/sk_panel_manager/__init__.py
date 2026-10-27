@@ -49,15 +49,18 @@ async def _async_register_static(hass: HomeAssistant) -> None:
         domain_data["static_registered"] = True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+type SKPanelManagerConfigEntry = ConfigEntry[PanelEnforcer]
+
+
+async def async_setup_entry(hass: HomeAssistant, entry: SKPanelManagerConfigEntry) -> bool:
     await _async_register_static(hass)
     store = PanelManagerStore(hass)
     await store.async_load()
     enforcer = PanelEnforcer(hass, store)
-
-    domain_data = hass.data.setdefault(DOMAIN, {})
-    domain_data["enforcer"] = enforcer
     entry.runtime_data = enforcer
+
+    # hass.data only keeps one-time registration flags; the enforcer lives in entry.runtime_data.
+    domain_data = hass.data.setdefault(DOMAIN, {})
 
     if not domain_data.get("ws_registered"):
         async_register_websocket(hass)
@@ -66,7 +69,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await _async_register_panel(hass, entry)
     frontend.add_extra_js_url(hass, RUNTIME_URL)
     await enforcer.async_start()
-    entry.async_on_unload(entry.add_update_listener(_async_reload))
+    # Browsers subscribed before a reload (e.g. after the options flow) pick up the rules again.
+    async_dispatcher_send(hass, SIGNAL_EFFECTIVE_CHANGED, None)
     return True
 
 
@@ -85,16 +89,10 @@ async def _async_register_panel(hass: HomeAssistant, entry: ConfigEntry) -> None
     )
 
 
-async def _async_reload(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    await hass.config_entries.async_reload(entry.entry_id)
-
-
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    enforcer: PanelEnforcer = entry.runtime_data
-    await enforcer.async_stop()
+async def async_unload_entry(hass: HomeAssistant, entry: SKPanelManagerConfigEntry) -> bool:
+    await entry.runtime_data.async_stop()
     frontend.async_remove_panel(hass, PANEL_URL_PATH, warn_if_unknown=False)
     frontend.remove_extra_js_url(hass, RUNTIME_URL)
-    hass.data[DOMAIN].pop("enforcer", None)
     async_dispatcher_send(hass, SIGNAL_EFFECTIVE_CHANGED, None)  # open browsers stop applying rules
     return True
 
@@ -105,8 +103,12 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await store.async_load()
     enforcer = PanelEnforcer(hass, store)
     try:
-        await enforcer.async_restore_everyone()
+        restored = await enforcer.async_restore_everyone()
     except Exception:  # noqa: BLE001 - removal must not fail
         _LOGGER.exception("Could not restore the users' sidebars")
+        return
+    if not restored:
+        # Keep the data: it holds the sidebars we still have to give back.
+        _LOGGER.warning("Some users' sidebars could not be restored; keeping %s", "sk_panel_manager.data")
         return
     await store.async_remove()

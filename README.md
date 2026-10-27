@@ -20,7 +20,7 @@
 <p align="center">
   <b>Decide which panels and dashboards each Home Assistant user sees</b>, from one visual admin panel.<br>
   An access matrix, profiles such as <i>Kids</i>, <i>Guests</i> or <i>Wall tablet</i>, a default dashboard per user, a locked sidebar<br>and a <b>visual kiosk mode</b> per user, profile, device and dashboard.<br>
-  No YAML, no editing every dashboard, and nothing that breaks with each Home Assistant update.<br>
+  No YAML and no editing every dashboard.<br>
   <sub>🇬🇧 English · 🇪🇸 <a href="https://github.com/SkynetCom/sk-panel-manager-ha/blob/main/README.es.md">Español</a></sub>
 </p>
 
@@ -107,7 +107,7 @@ One click reads the `kiosk_mode:` block of every dashboard and turns it into kio
 <td colspan="3" valign="top">
 
 ### 🧱 Built on Home Assistant, not on top of it
-The integration writes each user's sidebar and default dashboard to **Home Assistant's own per-user storage**, the same place the profile's *Edit sidebar* dialog uses. The browser module only listens to Home Assistant's own events (dialogs and navigation). It never reaches into the page structure, so **frontend updates don't break it**. Constant breakage after updates is the most common complaint about kiosk-style plugins.
+The integration writes each user's sidebar and default dashboard to **Home Assistant's own per-user storage**, the same place the profile's *Edit sidebar* dialog uses. The browser module only listens to Home Assistant's own events (dialogs and navigation). Sidebar rules don't depend on the page structure, so **frontend updates are much less likely to affect them**. Only the kiosk options that hide single parts of the page use selectors, all kept in one place.
 
 </td>
 </tr>
@@ -183,7 +183,7 @@ After importing, check the result in **View as…** and then remove the `kiosk_m
 | Profiles / groups of users | ❌ | ❌ | ❌ | ✅ |
 | Default dashboard set **per user** by an admin | ❌ | ❌ | ✅ | ✅ |
 | Users matched by **ID** (renaming doesn't break rules) | — | ❌ | ❌ | ✅ |
-| Doesn't depend on the frontend's page structure | ✅ | ❌ | ❌ | ✅ |
+| Doesn't depend on the frontend's page structure | ✅ | ❌ | ❌ | ✅ sidebar · partial kiosk |
 | Rules not readable without logging in | ✅ | ✅ | ❌ | ✅ |
 | Hide header / kiosk mode | Partial | ✅ | ❌ | ✅ |
 | Visual kiosk editor with a live preview | — | ❌ | — | ✅ |
@@ -236,6 +236,7 @@ The interface is available in **English and Spanish** and follows your Home Assi
 - ✅ Sets each user's **default dashboard**.
 - ✅ Sends users who open a hidden panel by its address back to their dashboard.
 - ❌ **It is not access control.** Home Assistant doesn't let an integration block a dashboard for one user and allow it for another. A user with technical knowledge can still read any dashboard's configuration and every entity's state through Home Assistant's API.
+- ❌ **Kiosk mode isn't a security boundary either:** it runs in the browser, so someone with the browser's developer tools can undo it on that device.
 
 For **sensitive data** (cameras, alarm, locks), use **admin-only dashboards** (`require_admin`) or a separate Home Assistant user without access. Use SK Panel Manager to **organise** what everyone sees.
 
@@ -247,6 +248,9 @@ For **sensitive data** (cameras, alarm, locks), use **admin-only dashboards** (`
 - **Browser module:** `skpm-runtime.js` blocks the `dialog-edit-sidebar` dialog and watches navigation. It does nothing for users who aren't managed.
 - **Kiosk:** *Full kiosk* uses Home Assistant's own kiosk mode (`hass-kiosk-mode`). Blocking dialogs and menus uses Home Assistant's events. Hiding single parts uses a small stylesheet in the matching part of the page. Every selector sits in one block at the top of `skpm-runtime.js`, and was checked against a real Home Assistant 2026.2.
 - **Panels hidden by default:** Home Assistant hides some built-in dashboards (Lights, Climate, Security) until a user turns them on. They stay that way unless a rule explicitly shows them.
+
+### Compatibility
+To change other users' sidebars, the integration uses two parts of Home Assistant that are **not public APIs**: the per-user frontend storage (`homeassistant.components.frontend.storage`) and the panel registry. Both are wrapped in a single file (`ha_storage.py` and `discovery.py`), and the tests run every week against the oldest supported and the current Home Assistant releases, so a change shows up there first. If a Home Assistant update ever breaks it, [open an issue](https://github.com/SkynetCom/sk-panel-manager-ha/issues) with the diagnostics attached.
 
 ## ❓ FAQ
 

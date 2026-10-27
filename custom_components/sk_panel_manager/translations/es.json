@@ -6,11 +6,13 @@
         "description": "Agrega un panel lateral, solo para administradores, para elegir qué paneles y dashboards ve cada usuario.",
         "data": {
           "sidebar_title": "Título en la barra lateral"
+        },
+        "data_description": {
+          "sidebar_title": "Nombre del panel de administración en la barra lateral. Solo lo ven los administradores."
         }
       }
     },
     "abort": {
-      "already_configured": "Ya está configurado",
       "single_instance_allowed": "Solo se permite una instancia"
     }
   },
@@ -20,6 +22,9 @@
         "title": "SK Panel Manager",
         "data": {
           "sidebar_title": "Título en la barra lateral"
+        },
+        "data_description": {
+          "sidebar_title": "Nombre del panel de administración en la barra lateral. Solo lo ven los administradores."
         }
       }
     }

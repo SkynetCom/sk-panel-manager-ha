@@ -20,13 +20,20 @@ from .resolver import UserInfo, resolve_kiosk
 
 DEVICE_ID = vol.All(str, vol.Match(r"^[A-Za-z0-9_\-.]{1,64}$"))
 MAX_DEVICES = 200
+MAX_UNNAMED_PER_USER = 5      # browsers one user can add before their oldest unnamed one is dropped
+SEEN_SAVE_INTERVAL = 3600     # seconds: last_seen alone doesn't cause a write more often than this
 
 # Settings the browser module needs; the rest of the configuration stays admin-only.
 RUNTIME_SETTINGS = ("lock_sidebar_editing", "redirect_forbidden")
 
 
 def _enforcer(hass: HomeAssistant) -> PanelEnforcer | None:
-    return hass.data.get(DOMAIN, {}).get("enforcer")
+    """The running enforcer (entry.runtime_data), or None while not loaded."""
+    for entry in hass.config_entries.async_entries(DOMAIN):
+        enforcer = getattr(entry, "runtime_data", None)
+        if isinstance(enforcer, PanelEnforcer) and not enforcer.stopped:
+            return enforcer
+    return None
 
 
 @callback
@@ -54,10 +61,11 @@ def _user_dict(user: UserInfo) -> dict[str, Any]:
 
 def _runtime(enforcer: PanelEnforcer, user: UserInfo, device_id: str | None = None) -> dict[str, Any]:
     """What one user gets on one device, without anything about other users."""
-    eff = enforcer.effective(user)
+    eff = enforcer.effective(user).as_dict()
+    eff.pop("sources", None)  # internal ids of profiles; the browser doesn't need them
     settings = enforcer.store.config["settings"]
     return {
-        **eff.as_dict(),
+        **eff,
         "settings": {k: settings[k] for k in RUNTIME_SETTINGS},
         "kiosk": resolve_kiosk(enforcer.store.config, user, device_id),
         "is_admin": user.is_admin,
@@ -66,17 +74,26 @@ def _runtime(enforcer: PanelEnforcer, user: UserInfo, device_id: str | None = No
 
 def _register_device(enforcer: PanelEnforcer, device_id: str, user_id: str, user_agent: str | None) -> None:
     status = enforcer.store.device_status
-    if device_id not in status and len(status) >= MAX_DEVICES:
-        # Drop the device seen longest ago that the admin hasn't named.
-        unnamed = [d for d in status if d not in enforcer.store.config["devices"]]
-        if not unnamed:
-            return
-        status.pop(min(unnamed, key=lambda d: status[d].get("last_seen", "")))
-    status[device_id] = {
-        "last_user": user_id,
-        "last_seen": dt_util.utcnow().isoformat(),
-        "user_agent": (user_agent or "")[:300],
-    }
+    named = enforcer.store.config["devices"]
+    now = dt_util.utcnow()
+    user_agent = (user_agent or "")[:300]
+    old = status.get(device_id)
+    if old is not None:
+        last = dt_util.parse_datetime(old.get("last_seen", "")) if old.get("last_seen") else None
+        recent = last is not None and (now - last).total_seconds() < SEEN_SAVE_INTERVAL
+        if old.get("last_user") == user_id and old.get("user_agent") == user_agent and recent:
+            return  # nothing new: no write on every page load
+    else:
+        unnamed = [d for d in status if d not in named]
+        mine = [d for d in unnamed if status[d].get("last_user") == user_id]
+        # One user can't fill the list: their own oldest unnamed browser makes room first.
+        if len(mine) >= MAX_UNNAMED_PER_USER:
+            status.pop(min(mine, key=lambda d: status[d].get("last_seen", "")))
+        elif len(status) >= MAX_DEVICES:
+            if not unnamed:
+                return
+            status.pop(min(unnamed, key=lambda d: status[d].get("last_seen", "")))
+    status[device_id] = {"last_user": user_id, "last_seen": now.isoformat(), "user_agent": user_agent}
     enforcer.store.schedule_save()
 
 
@@ -144,7 +161,7 @@ async def ws_effective(hass: HomeAssistant, connection: websocket_api.ActiveConn
 @websocket_api.websocket_command({
     vol.Required("type"): f"{DOMAIN}/subscribe",
     vol.Optional("device_id"): DEVICE_ID,
-    vol.Optional("user_agent"): str,
+    vol.Optional("user_agent"): vol.All(str, vol.Length(max=1000)),
 })
 @websocket_api.async_response
 async def ws_subscribe(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict) -> None:

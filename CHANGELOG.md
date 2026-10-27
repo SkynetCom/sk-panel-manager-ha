@@ -2,6 +2,29 @@
 
 🇬🇧 English · 🇪🇸 [Español](CHANGELOG.es.md)
 
+## 1.0.1 — 2026-10-27
+- **Adding the integration can't get stuck anymore:** setup no longer waits until the rules are applied to every user (that
+  now happens right after, in the background). A slow or unusual installation could leave the *Add integration* dialog
+  spinning and the integration "already being set up".
+- **Security hardening** (from a full review before submitting to the HACS store):
+  - Importing a backup keeps only well-formed values, and every colour shown in the panel is validated, so a crafted file
+    can't run code in the admin's browser.
+  - After the integration is unloaded or removed, nothing can re-apply old rules; uninstalling keeps the data if a user's
+    sidebar couldn't be restored, instead of losing it.
+  - Reloading the integration (for example after changing its title) sends the rules again, so wall tablets stay in kiosk.
+  - A non-admin user can register at most 5 browsers and can't fill the device list; a browser that opens Home Assistant
+    again doesn't cause a write every time.
+  - Stricter validation of saved configurations (types, limits, icon names) with clear errors.
+  - The browser module ignores malformed addresses, never lets an error reach Home Assistant's connection, and does no work
+    for users without kiosk options. Non-admin users no longer receive internal profile ids.
+  - Diagnostics map every profile id to an alias.
+- Setup dialog: a short description for the title field; a second attempt is refused cleanly by Home Assistant
+  (single instance). Changing the options reloads the integration with Home Assistant's own mechanism.
+- Tests run on both an older and the current Home Assistant (Python 3.13 and 3.14), every week too; new tests for the
+  setup dialog and every fix above.
+- README: compatibility note (it uses Home Assistant's per-user frontend storage, which is not a public API), kiosk mode is
+  not a security boundary either, softer wording, and images about 4x smaller.
+
 ## 1.0.0 — 2026-10-27
 First stable release.
 - **Diagnostics:** *Settings → Devices & services → SK Panel Manager → ⋮ → Download diagnostics* now includes the rules and

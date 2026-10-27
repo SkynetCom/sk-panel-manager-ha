@@ -32,6 +32,8 @@ class PanelEnforcer:
         self._listeners: list[Callable[[], None]] = []
         self._user_subs: dict[str, Callable[[], None]] = {}
         self._started = False
+        self.stopped = False  # set on unload: nothing runs anymore, websocket answers "not_loaded"
+        self._tasks: set[asyncio.Task] = set()
         self._debouncer = Debouncer(
             hass, _LOGGER, cooldown=1.0, immediate=False, function=self.async_apply_all
         )
@@ -43,7 +45,9 @@ class PanelEnforcer:
         self._listeners.append(self.hass.bus.async_listen(EVENT_USER_UPDATED, self._user_event))
         self._listeners.append(self.hass.bus.async_listen(EVENT_USER_REMOVED, self._user_removed))
         if self.hass.state is CoreState.running:
-            await self._async_first_apply()
+            # Never make setup (and the "Add integration" dialog) wait for every user's storage.
+            self._started = True
+            self._spawn(self._async_first_apply(), "first apply")
         else:
             # Panels of other integrations are still registering: wait for a full catalog.
             self._listeners.append(self.hass.bus.async_listen_once(
@@ -51,29 +55,46 @@ class PanelEnforcer:
             ))
 
     async def async_stop(self) -> None:
+        """Stop everything: after this, no apply can run (e.g. after the integration is removed)."""
+        self.stopped = True
+        self._debouncer.async_cancel()
         for unsub in self._listeners:
             unsub()
         self._listeners.clear()
         for unsub in self._user_subs.values():
             unsub()
         self._user_subs.clear()
-        self._debouncer.async_cancel()
-        await self.store.async_flush()
+        for task in list(self._tasks):
+            task.cancel()
+        # Let an apply that is already writing finish before the final save.
+        async with self._lock:
+            await self.store.async_flush()
+
+    def _spawn(self, coro: Any, name: str) -> None:
+        if self.stopped:
+            coro.close()
+            return
+        task = self.hass.async_create_background_task(coro, f"{__name__} {name}")
+        self._tasks.add(task)
+        task.add_done_callback(self._tasks.discard)
 
     async def _started_event(self, _event: Event) -> None:
-        await self._async_first_apply()
+        self._spawn(self._async_first_apply(), "first apply")
 
     async def _async_first_apply(self) -> None:
         self._started = True
-        await self.async_apply_all()
+        try:
+            await self.async_apply_all()
+        except Exception:  # noqa: BLE001 - logged, never breaks Home Assistant
+            _LOGGER.exception("Could not apply the panel configuration")
 
     @callback
     def _schedule_all(self, _event: Event | None = None) -> None:
-        if self._started:
+        if self._started and not self.stopped:
             self._debouncer.async_schedule_call()
 
     async def _user_event(self, event: Event) -> None:
-        if self._started and (user_id := event.data.get("user_id")):
+        if self._started and not self.stopped and (user_id := event.data.get("user_id")):
             await self.async_apply_user_id(user_id)
 
     async def _user_removed(self, event: Event) -> None:
@@ -104,6 +125,8 @@ class PanelEnforcer:
 
     async def _async_apply(self, user: UserInfo, catalog: list[PanelInfo]) -> None:
         async with self._lock:
+            if self.stopped:
+                return
             try:
                 eff = self.effective(user, catalog)
                 changed = await (self._async_enforce(user, eff, catalog) if eff.managed
@@ -174,14 +197,17 @@ class PanelEnforcer:
         """Undo what the integration did to a user that is no longer managed."""
         if unsub := self._user_subs.pop(user_id, None):
             unsub()
-        applied = self.store.applied.pop(user_id, None)
-        snapshot = self.store.snapshots.pop(user_id, None)
+        applied = self.store.applied.get(user_id)
+        snapshot = self.store.snapshots.get(user_id)
         if applied is None:
-            if snapshot is not None:
+            if self.store.snapshots.pop(user_id, None) is not None:
                 self.store.schedule_save()
             return False
         data = await async_user_data(self.hass, user_id)
         await self._async_restore(data, applied, snapshot or {})
+        # Forget the snapshot only once the user's own sidebar is back.
+        self.store.applied.pop(user_id, None)
+        self.store.snapshots.pop(user_id, None)
         self.store.schedule_save()
         return True
 
@@ -210,25 +236,29 @@ class PanelEnforcer:
                 restored["default_panel"] = snapshot["default_panel"]
             await data.async_set_core(restored)
 
-    async def async_restore_everyone(self) -> None:
-        """Integration removed: give every user back their own sidebar."""
+    async def async_restore_everyone(self) -> bool:
+        """Integration removed: give every user back their own sidebar. False if any failed."""
+        ok = True
         async with self._lock:
             for user_id in list(self.store.applied):
                 try:
                     await self._async_release(user_id)
                 except Exception:  # noqa: BLE001
+                    ok = False
                     _LOGGER.exception("Could not restore the sidebar of user %s", user_id)
         await self.store.async_flush()
+        return ok
 
     # ------------------------------------------------------------------ live re-apply
     def _ensure_subscribed(self, user_id: str, data: Any) -> None:
-        if user_id in self._user_subs:
+        if user_id in self._user_subs or self.stopped:
             return
 
         @callback
         def _changed() -> None:
             # The user (or another tool) edited their sidebar / default dashboard: re-apply.
             # Our own writes land here too; the second pass finds nothing to change.
-            self.hass.async_create_task(self.async_apply_user_id(user_id), eager_start=False)
+            if not self.stopped:
+                self._spawn(self.async_apply_user_id(user_id), f"re-apply {user_id}")
 
         self._user_subs[user_id] = data.subscribe(_changed)

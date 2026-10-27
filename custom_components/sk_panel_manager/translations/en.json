@@ -6,11 +6,13 @@
         "description": "Adds an admin-only sidebar panel to choose which panels and dashboards each user sees.",
         "data": {
           "sidebar_title": "Sidebar title"
+        },
+        "data_description": {
+          "sidebar_title": "Name of the admin panel in the sidebar. Only administrators see it."
         }
       }
     },
     "abort": {
-      "already_configured": "Already configured",
       "single_instance_allowed": "Only one instance is allowed"
     }
   },
@@ -20,6 +22,9 @@
         "title": "SK Panel Manager",
         "data": {
           "sidebar_title": "Sidebar title"
+        },
+        "data_description": {
+          "sidebar_title": "Name of the admin panel in the sidebar. Only administrators see it."
         }
       }
     }

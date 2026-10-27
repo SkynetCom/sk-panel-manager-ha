@@ -20,7 +20,7 @@
 <p align="center">
   <b>Decidí qué paneles y dashboards ve cada usuario de Home Assistant</b>, desde un único panel visual.<br>
   Matriz de acceso, perfiles como <i>Chicos</i>, <i>Invitados</i> o <i>Tablet de pared</i>, dashboard por defecto por usuario, barra lateral bloqueada<br>y <b>modo kiosk visual</b> por usuario, perfil, dispositivo y dashboard.<br>
-  Sin YAML, sin tocar cada dashboard y sin que se rompa con cada actualización de Home Assistant.<br>
+  Sin YAML y sin tocar cada dashboard.<br>
   <sub>🇬🇧 <a href="https://github.com/SkynetCom/sk-panel-manager-ha/blob/main/README.md">English</a> · 🇪🇸 Español</sub>
 </p>
 
@@ -107,7 +107,7 @@ Con un click lee el bloque `kiosk_mode:` de cada dashboard y lo convierte en aju
 <td colspan="3" valign="top">
 
 ### 🧱 Construido sobre Home Assistant, no encima
-La integración escribe la barra lateral y el dashboard por defecto de cada usuario en el **almacenamiento por usuario de Home Assistant**, el mismo que usa *Editar barra lateral* del perfil. El módulo del navegador solo escucha eventos propios de Home Assistant (diálogos y navegación). Nunca toca la estructura de la página, así que **las actualizaciones del frontend no lo rompen**. Que se rompan después de cada actualización es la queja más común de los plugins tipo kiosk.
+La integración escribe la barra lateral y el dashboard por defecto de cada usuario en el **almacenamiento por usuario de Home Assistant**, el mismo que usa *Editar barra lateral* del perfil. El módulo del navegador solo escucha eventos propios de Home Assistant (diálogos y navegación). Las reglas de la barra no dependen de la estructura de la página, así que **es mucho menos probable que una actualización del frontend las afecte**. Solo las opciones de kiosk que ocultan partes sueltas usan selectores, todos en un mismo lugar.
 
 </td>
 </tr>
@@ -183,7 +183,7 @@ Después de importar, revisá el resultado en **Ver como…** y sacá el bloque 
 | Perfiles / grupos de usuarios | ❌ | ❌ | ❌ | ✅ |
 | Dashboard por defecto **por usuario** elegido por un admin | ❌ | ❌ | ✅ | ✅ |
 | Usuarios por **ID** (renombrar no rompe las reglas) | — | ❌ | ❌ | ✅ |
-| No depende de la estructura de la página del frontend | ✅ | ❌ | ❌ | ✅ |
+| No depende de la estructura de la página del frontend | ✅ | ❌ | ❌ | ✅ barra · kiosk parcial |
 | Reglas que no se leen sin iniciar sesión | ✅ | ✅ | ❌ | ✅ |
 | Ocultar encabezado / modo kiosk | Parcial | ✅ | ❌ | ✅ |
 | Editor visual de kiosk con vista previa | — | ❌ | — | ✅ |
@@ -236,6 +236,7 @@ La interfaz está en **inglés y español** y sigue el idioma de Home Assistant.
 - ✅ Fija el **dashboard por defecto** de cada usuario.
 - ✅ Si un usuario abre un panel oculto por su dirección, lo devuelve a su dashboard.
 - ❌ **No es un control de acceso.** Home Assistant no permite que una integración bloquee un dashboard para un usuario y lo permita para otro. Un usuario con conocimientos técnicos igual puede leer la configuración de cualquier dashboard y el estado de todas las entidades por la API de Home Assistant.
+- ❌ **El modo kiosk tampoco es una barrera de seguridad:** funciona en el navegador, así que alguien con las herramientas de desarrollo del navegador lo puede deshacer en ese dispositivo.
 
 Para **datos sensibles** (cámaras, alarma, cerraduras), usá **dashboards solo para administradores** (`require_admin`) o un usuario de Home Assistant aparte, sin acceso. SK Panel Manager sirve para **ordenar** lo que ve cada uno.
 
@@ -247,6 +248,9 @@ Para **datos sensibles** (cámaras, alarma, cerraduras), usá **dashboards solo 
 - **Módulo del navegador:** `skpm-runtime.js` bloquea el diálogo `dialog-edit-sidebar` y vigila la navegación. No hace nada con los usuarios que no se gestionan.
 - **Kiosk:** el *kiosk completo* usa el modo kiosk propio de Home Assistant (`hass-kiosk-mode`). Bloquear diálogos y menús usa los eventos de Home Assistant. Ocultar partes sueltas usa una hoja de estilos chica en la parte de la página que corresponde. Todos los selectores están en un solo bloque al principio de `skpm-runtime.js` y se verificaron contra un Home Assistant 2026.2 real.
 - **Paneles ocultos por defecto:** Home Assistant oculta algunos dashboards propios (Luces, Clima, Seguridad) hasta que el usuario los activa. Siguen así salvo que una regla los muestre explícitamente.
+
+### Compatibilidad
+Para cambiar la barra de otros usuarios, la integración usa dos partes de Home Assistant que **no son APIs públicas**: el almacenamiento por usuario del frontend (`homeassistant.components.frontend.storage`) y el registro de paneles. Las dos están aisladas en un solo archivo cada una (`ha_storage.py` y `discovery.py`), y los tests corren todas las semanas contra la versión mínima soportada y la actual de Home Assistant, así que un cambio aparece ahí primero. Si alguna actualización de Home Assistant lo rompe, [abrí un issue](https://github.com/SkynetCom/sk-panel-manager-ha/issues) con el diagnóstico adjunto.
 
 ## ❓ Preguntas frecuentes
 

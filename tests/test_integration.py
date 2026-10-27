@@ -27,7 +27,7 @@ async def _setup(hass: HomeAssistant):
     for url, title in (("dashboard-kids", "Kids"), ("energy-dash", "Energy")):
         frontend.async_register_built_in_panel(hass, "lovelace", title, "mdi:home", frontend_url_path=url)
     await hass.async_block_till_done()
-    return entry, hass.data[DOMAIN]["enforcer"]
+    return entry, entry.runtime_data
 
 
 async def _kid(hass: HomeAssistant):
@@ -286,3 +286,77 @@ async def test_untouched_without_rules_and_diagnostics(hass: HomeAssistant):
     text = str(diag)
     assert kid.id not in text and "Kid" not in text and "Smiths" not in text
     assert any(e["hidden"] == ["energy-dash"] for e in diag["effective"].values())
+
+
+async def test_setup_does_not_wait_for_users(hass: HomeAssistant, monkeypatch):
+    """A slow user store must not keep the "Add integration" dialog (setup) waiting."""
+    import asyncio
+
+    from custom_components.sk_panel_manager import enforcer as enf
+
+    release = asyncio.Event()
+    real = enf.async_user_data
+
+    async def slow(hass_, user_id):
+        await release.wait()
+        return await real(hass_, user_id)
+
+    monkeypatch.setattr(enf, "async_user_data", slow)
+    await _kid(hass)
+    entry = MockConfigEntry(domain=DOMAIN, data={}, unique_id=DOMAIN)
+    entry.add_to_hass(hass)
+    assert await asyncio.wait_for(hass.config_entries.async_setup(entry.entry_id), timeout=5)
+    release.set()
+    await hass.async_block_till_done(wait_background_tasks=True)
+
+
+async def test_stopped_enforcer_never_reapplies(hass: HomeAssistant):
+    """After the integration is removed, a pending re-apply must not hide panels again."""
+    kid = await _kid(hass)
+    entry, enforcer = await _setup(hass)
+    await _save(hass, enforcer, {"users": {kid.id: {"panels": {"energy-dash": "deny"}}}})
+    store = await _store(hass, kid.id)
+    # A change from the user queues a re-apply on the running enforcer...
+    await store.async_set_item("sidebar", {"panelOrder": [], "hiddenPanels": []})
+    # ...and the integration is removed before it runs.
+    assert await hass.config_entries.async_remove(entry.entry_id)
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert "energy-dash" not in (store.data.get("sidebar") or {}).get("hiddenPanels", [])
+    await store.async_set_item("sidebar", {"panelOrder": [], "hiddenPanels": []})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert store.data["sidebar"]["hiddenPanels"] == []
+    assert enforcer.stopped and not enforcer._user_subs and not enforcer._tasks  # nothing left running
+
+
+async def test_reload_sends_rules_again(hass: HomeAssistant, hass_ws_client, hass_read_only_user,
+                                        hass_read_only_access_token):
+    entry, enforcer = await _setup(hass)
+    await _save(hass, enforcer, {"users": {hass_read_only_user.id: {"kiosk": {"all": {"hide_header": True}}}}})
+    user = await hass_ws_client(hass, hass_read_only_access_token)
+    await user.send_json_auto_id({"type": f"{DOMAIN}/subscribe"})
+    assert (await user.receive_json())["success"]
+    assert (await user.receive_json())["event"]["kiosk"]["default"] == {"hide_header": True}
+    assert await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+    events = []
+    for _ in range(3):
+        events.append((await user.receive_json())["event"])
+        if events[-1].get("managed") and events[-1].get("kiosk", {}).get("default"):
+            break
+    assert events[-1]["kiosk"]["default"] == {"hide_header": True}  # not left on "not_loaded"
+    assert "sources" not in events[-1]
+
+
+async def test_device_registration_is_bounded(hass: HomeAssistant, hass_ws_client, hass_read_only_access_token):
+    _, enforcer = await _setup(hass)
+    user = await hass_ws_client(hass, hass_read_only_access_token)
+    for i in range(12):
+        await user.send_json_auto_id({"type": f"{DOMAIN}/subscribe", "device_id": f"spam{i}", "user_agent": "x"})
+        assert (await user.receive_json())["success"]
+        await user.receive_json()
+    assert len(enforcer.store.device_status) == 5  # one user can't fill the list
+    await user.send_json_auto_id({"type": f"{DOMAIN}/subscribe", "device_id": "big", "user_agent": "x" * 5000})
+    msg = await user.receive_json()
+    while msg["type"] != "result":
+        msg = await user.receive_json()
+    assert msg["error"]["code"] == "invalid_format"

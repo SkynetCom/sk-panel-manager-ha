@@ -2,6 +2,29 @@
 
 🇬🇧 [English](CHANGELOG.md) · 🇪🇸 Español
 
+## 1.0.1 — 2026-10-27
+- **Agregar la integración ya no se puede trabar:** el arranque ya no espera a que se apliquen las reglas a todos los usuarios
+  (eso ahora pasa justo después, en segundo plano). En una instalación lenta o particular, el diálogo *Agregar integración*
+  podía quedar girando y la integración quedaba "ya se está configurando".
+- **Refuerzos de seguridad** (de una revisión completa antes de pedir el ingreso a la tienda de HACS):
+  - Al importar una copia de seguridad solo se conservan valores bien formados, y todo color que muestra el panel se valida,
+    así que un archivo manipulado no puede ejecutar código en el navegador del administrador.
+  - Después de descargar o quitar la integración, nada puede volver a aplicar reglas viejas; al desinstalar, si no se pudo
+    restaurar la barra de algún usuario, los datos se conservan en vez de perderse.
+  - Recargar la integración (por ejemplo, después de cambiar su título) vuelve a enviar las reglas, así las tablets siguen en kiosk.
+  - Un usuario que no es administrador puede registrar como mucho 5 navegadores y no puede llenar la lista de dispositivos;
+    un navegador que vuelve a abrir Home Assistant ya no provoca una escritura cada vez.
+  - Validación más estricta de la configuración guardada (tipos, límites, nombres de íconos) con errores claros.
+  - El módulo del navegador ignora direcciones mal formadas, nunca deja que un error llegue a la conexión de Home Assistant
+    y no hace trabajo en usuarios sin opciones de kiosk. Los usuarios que no son admin ya no reciben ids internos de perfiles.
+  - El diagnóstico reemplaza todos los ids de perfiles por alias.
+- Diálogo de instalación: una descripción breve para el campo del título; un segundo intento lo rechaza Home Assistant de forma
+  limpia (una sola instancia). Cambiar las opciones recarga la integración con el mecanismo propio de Home Assistant.
+- Los tests corren en una versión vieja y en la actual de Home Assistant (Python 3.13 y 3.14), también todas las semanas;
+  tests nuevos para el diálogo de instalación y cada corrección de arriba.
+- README: nota de compatibilidad (usa el almacenamiento por usuario del frontend de Home Assistant, que no es una API pública),
+  el modo kiosk tampoco es una barrera de seguridad, redacción más medida e imágenes unas 4 veces más livianas.
+
 ## 1.0.0 — 2026-10-27
 Primera versión estable.
 - **Diagnóstico:** *Ajustes → Dispositivos y servicios → SK Panel Manager → ⋮ → Descargar diagnóstico* ahora incluye las reglas

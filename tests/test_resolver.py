@@ -146,3 +146,31 @@ def test_kiosk_device_layer_applies_to_unmanaged_users():
     owner = U("o", is_owner=True, is_admin=True)
     assert resolver.resolve_kiosk(config, owner, None)["default"] == {}
     assert resolver.resolve_kiosk(config, owner, "tab1")["default"] == {"kiosk": True}
+
+
+def test_versions_match():
+    import json
+    import pathlib
+    import re
+
+    base = pathlib.Path(__file__).resolve().parents[1] / "custom_components" / "sk_panel_manager"
+    manifest = json.loads((base / "manifest.json").read_text())["version"]
+    const = re.search(r'^VERSION = "([^"]+)"', (base / "const.py").read_text(), re.M).group(1)
+    panel = re.search(r'PANEL_VERSION = "([^"]+)"', (base / "frontend" / "skpm-panel.js").read_text()).group(1)
+    assert manifest == const == panel
+
+
+@pytest.mark.parametrize("data", [
+    {"profiles": {"p": {"panels": ["x"]}}},
+    {"users": {"u": {"profiles": [{"a": 1}]}}},
+    {"users": {"u": "nope"}},
+    {"profiles": {f"p{i}": {} for i in range(101)}},
+])
+def test_validate_rejects_bad_types_cleanly(data):
+    with pytest.raises(model.InvalidConfig):
+        model.validate_config(data)
+
+
+def test_icon_must_be_mdi_name():
+    config = model.normalize_config({"profiles": {"p": {"icon": 'mdi:x" onmouseover="alert(1)'}}})
+    assert config["profiles"]["p"]["icon"] == "mdi:account-group"

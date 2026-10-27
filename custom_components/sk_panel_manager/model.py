@@ -24,6 +24,11 @@ DEFAULT_SETTINGS: dict[str, Any] = {
 }
 
 _ID_RE = re.compile(r"^[A-Za-z0-9_\-.]{1,64}$")
+_ICON_RE = re.compile(r"^mdi:[a-z0-9-]{1,64}$")
+MAX_PROFILES = 100
+MAX_USERS = 500
+MAX_DEVICES = 500
+MAX_PANEL_RULES = 300
 _COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 MAX_NAME = 60
 
@@ -93,7 +98,7 @@ def normalize_profile(pid: str, data: Any) -> dict[str, Any]:
     default_panel = data.get("default_panel")
     return {
         "name": _name(data.get("name"), pid),
-        "icon": icon if isinstance(icon, str) and icon.startswith("mdi:") else "mdi:account-group",
+        "icon": icon if isinstance(icon, str) and _ICON_RE.match(icon) else "mdi:account-group",
         "color": color if isinstance(color, str) and _COLOR_RE.match(color) else None,
         "panels": normalize_access(data.get("panels")),
         "panel_order": normalize_order(data.get("panel_order")),
@@ -147,12 +152,24 @@ def normalize_config(data: Any) -> dict[str, Any]:
 
 def validate_config(data: Any) -> dict[str, Any]:
     """Strict check for configurations saved from the panel, then normalise."""
+    try:
+        return _validate_config(data)
+    except InvalidConfig:
+        raise
+    except (TypeError, AttributeError, ValueError) as err:
+        raise InvalidConfig(f"Invalid configuration: {err}") from err
+
+
+def _validate_config(data: Any) -> dict[str, Any]:
     if not isinstance(data, dict):
         raise InvalidConfig("Configuration must be an object")
+    limits = {"profiles": MAX_PROFILES, "users": MAX_USERS, "devices": MAX_DEVICES}
     for section in ("profiles", "users", "devices"):
         value = data.get(section, {})
         if not isinstance(value, dict):
             raise InvalidConfig(f"'{section}' must be an object")
+        if len(value) > limits[section]:
+            raise InvalidConfig(f"Too many {section} (max {limits[section]})")
         for key in value:
             if not _valid_id(key):
                 raise InvalidConfig(f"Invalid id in '{section}': {key!r}")
@@ -160,7 +177,12 @@ def validate_config(data: Any) -> dict[str, Any]:
         for key, item in section.items():
             if not isinstance(item, dict):
                 raise InvalidConfig(f"{section_name}.{key} must be an object")
-            for panel, value in (item.get("panels") or {}).items():
+            panels = item.get("panels") or {}
+            if not isinstance(panels, dict):
+                raise InvalidConfig(f"{section_name}.{key}.panels must be an object")
+            if len(panels) > MAX_PANEL_RULES:
+                raise InvalidConfig(f"{section_name}.{key}: too many panel rules")
+            for panel, value in panels.items():
                 if value not in ACCESS_VALUES:
                     raise InvalidConfig(f"{section_name}.{key}.panels.{panel}: must be allow or deny")
     profile_ids = set(data.get("profiles") or {})
@@ -169,6 +191,6 @@ def validate_config(data: Any) -> dict[str, Any]:
         if not isinstance(profiles, list):
             raise InvalidConfig(f"users.{uid}.profiles must be a list")
         for pid in profiles:
-            if pid not in profile_ids:
+            if not isinstance(pid, str) or pid not in profile_ids:
                 raise InvalidConfig(f"users.{uid}: unknown profile {pid!r}")
     return normalize_config(data)

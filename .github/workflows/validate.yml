@@ -4,12 +4,14 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"  # weekly: catch Home Assistant / HACS changes before users do
 
 jobs:
   hassfest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: home-assistant/actions/hassfest@master
 
   hacs:
@@ -21,11 +23,16 @@ jobs:
 
   tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.13 gets an older Home Assistant, 3.14 the current one (2026.10+ needs Python 3.14).
+        python-version: ["3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
+          python-version: ${{ matrix.python-version }}
       - name: Install test dependencies
         run: |
           pip install pytest-homeassistant-custom-component
@@ -36,8 +43,8 @@ jobs:
   frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "22"
       - run: for f in custom_components/sk_panel_manager/frontend/*.js; do node --check "$f"; done

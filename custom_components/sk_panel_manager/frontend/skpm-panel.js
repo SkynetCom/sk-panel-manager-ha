@@ -1,15 +1,15 @@
 // SK Panel Manager — admin panel.
 // Dependency-free web component: renders with template strings, uses event delegation
 // and pointer-based drag & drop (mouse + touch), like SK Irrigation Manager.
-import { translator } from "./skpm-i18n.js?v=1.0.0";
-import { STYLES } from "./skpm-styles.js?v=1.0.0";
-import { resolve } from "./skpm-resolver.js?v=1.0.0";
-import { KioskMixin } from "./skpm-kiosk.js?v=1.0.0";
-import { ToolsMixin } from "./skpm-tools.js?v=1.0.0";
+import { translator } from "./skpm-i18n.js?v=1.0.1";
+import { STYLES } from "./skpm-styles.js?v=1.0.1";
+import { resolve } from "./skpm-resolver.js?v=1.0.1";
+import { KioskMixin } from "./skpm-kiosk.js?v=1.0.1";
+import { ToolsMixin } from "./skpm-tools.js?v=1.0.1";
 
 const DOMAIN = "sk_panel_manager";
 // Version of this file; compared with the installed integration to spot a stale browser cache.
-export const PANEL_VERSION = "1.0.0";
+export const PANEL_VERSION = "1.0.1";
 const TABS = [
   ["overview", "mdi:view-dashboard-outline"],
   ["matrix", "mdi:table-check"],
@@ -22,6 +22,8 @@ const TABS = [
 const KINDS = ["dashboard", "builtin", "integration", "addon"];
 const PALETTE = ["#3f51cd", "#1e88e5", "#00a6a6", "#2e9e6b", "#7cb342", "#f2a900", "#ef6c00", "#e5533d", "#d81b60", "#8e44ad"];
 
+// Only "#rrggbb" may reach a style attribute (values can come from an imported file).
+const cssColor = (c) => (typeof c === "string" && /^#[0-9a-fA-F]{6}$/.test(c) ? c : null);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const newId = (p) => `${p}_${Math.random().toString(16).slice(2, 10)}`;
@@ -181,7 +183,7 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
     if (!pids.length) return `<span class="muted small">${esc(this.t("no_profile"))}</span>`;
     return pids.map((pid) => {
       const p = this._draft.profiles[pid];
-      return p ? `<span class="chip" style="background:${p.color || colorFor(pid)};color:#fff">${icon(p.icon)}${esc(p.name)}</span>` : "";
+      return p ? `<span class="chip" style="background:${cssColor(p.color) || colorFor(pid)};color:#fff">${icon(p.icon)}${esc(p.name)}</span>` : "";
     }).join("");
   }
 
@@ -348,7 +350,7 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
         const flash = this._flash === `p:${pid}:${c.url_path}` ? "flash" : "";
         return `<td><button class="cell ${flash}" data-action="cycle-profile" data-pid="${esc(pid)}" data-panel="${esc(c.url_path)}" title="${esc(title)}" aria-label="${esc(title)}">${dot(v || "none", stateIcon(v))}</button></td>`;
       }).join("");
-      return `<tr><th><div class="who"><span class="icon-box" style="--c:${p.color || colorFor(pid)};width:30px;height:30px">${icon(p.icon)}</span>
+      return `<tr><th><div class="who"><span class="icon-box" style="--c:${cssColor(p.color) || colorFor(pid)};width:30px;height:30px">${icon(p.icon)}</span>
         <div style="min-width:0"><div class="n">${esc(p.name)}</div><div class="s">${esc(t("member_count", { n: members }))}</div></div></div></th>${cells}</tr>`;
     }).join("");
 
@@ -433,7 +435,7 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
 
     const profiles = Object.entries(this._draft.profiles);
     const profileCard = `<div class="card"><div class="head">${icon("mdi:account-group")}<h2>${esc(t("user_profiles"))}</h2></div><div class="body">
-      ${profiles.length ? `<div class="chips">${profiles.map(([pid, p]) => `<button class="chip toggle ${cfg?.profiles.includes(pid) ? "on" : ""}" style="--c:${p.color || colorFor(pid)}"
+      ${profiles.length ? `<div class="chips">${profiles.map(([pid, p]) => `<button class="chip toggle ${cfg?.profiles.includes(pid) ? "on" : ""}" style="--c:${cssColor(p.color) || colorFor(pid)}"
           data-action="toggle-user-profile" data-uid="${esc(u.id)}" data-pid="${esc(pid)}">${icon(p.icon)}${esc(p.name)}</button>`).join("")}</div>
           <p class="muted small" style="margin:10px 0 0">${esc(t("user_profiles_sub"))}</p>`
         : `<div class="row"><span class="muted">${esc(t("no_profiles_yet"))}</span><span class="spacer"></span><button class="btn" data-action="new-profile">${icon("mdi:plus")}${esc(t("create_profile"))}</button></div>`}
@@ -531,7 +533,7 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
     const list = entries.map(([pid, p]) => {
       const members = Object.values(this._draft.users).filter((u) => u.profiles.includes(pid)).length;
       return `<button class="item ${pid === this._selProfile ? "sel" : ""}" data-action="sel-profile" data-pid="${esc(pid)}">
-        <span class="icon-box" style="--c:${p.color || colorFor(pid)};width:30px;height:30px">${icon(p.icon)}</span>
+        <span class="icon-box" style="--c:${cssColor(p.color) || colorFor(pid)};width:30px;height:30px">${icon(p.icon)}</span>
         <span class="t"><b>${esc(p.name)}</b><span class="muted small">${esc(t("member_count", { n: members }))} · ${esc(t("rules_count", { n: Object.keys(p.panels).length }))}</span></span></button>`;
     }).join("");
     return `<div class="md">
@@ -542,7 +544,7 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
   _profileDetail(pid) {
     const t = this.t;
     const p = this._draft.profiles[pid];
-    const color = p.color || colorFor(pid);
+    const color = cssColor(p.color) || colorFor(pid);
     const candidates = this._users.filter((u) => !u.is_owner && !u.system_generated);
     const members = candidates.map((u) => {
       const on = this._draft.users[u.id]?.profiles.includes(pid);

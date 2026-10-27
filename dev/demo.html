@@ -159,6 +159,12 @@ if (q.get("vapanel")) el._vaPanel = q.get("vapanel");
 el.hass = hass;
 document.body.appendChild(el);
 if (q.get("kmscan")) setTimeout(() => el._scanKioskMode(), 300);
+// Screenshots: let the matrix use its full height instead of an inner scroll area.
+if (q.get("shot")) setTimeout(() => {
+  const st = document.createElement("style");
+  st.textContent = ".mwrap{max-height:none!important}";
+  el.shadowRoot.appendChild(st);
+}, 50);
 </script>
 </body>
 </html>

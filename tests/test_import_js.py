@@ -72,3 +72,25 @@ def test_backup_round_trip_remaps_users_by_name(tmp_path):
     assert out["users"] == ["u1", "u2"]  # old9 found by name ("kitchen tablet")
     assert out["report"] == {"kept": 1, "matched": ["kitchen tablet"], "dropped": ["Nobody"]}
     assert out["error"] == "not_a_backup"
+
+
+def test_backup_import_drops_hostile_values(tmp_path):
+    out = run(tmp_path, """
+      const evil = '" onmouseover="alert(1)';
+      const data = { format: "sk_panel_manager", users: { u1: "Tomás" }, config: {
+        settings: { default_access: "<img>", restrict_admins: "yes" },
+        profiles: { p1: { name: "Kids", color: "red" + evil, icon: "mdi:x" + evil, panels: { a: "allow", b: evil, "x/y": "deny" },
+                          kiosk: { all: { hide_header: true, evil: "1" } } },
+                    "bad id!": { name: "x" } },
+        users: { u1: { profiles: ["p1", "ghost", 3], panels: "nope", managed: "no" } },
+        devices: { "d1": { name: 42, kiosk: "x" } } } };
+      return m.readBackup(data, USERS).config;""")
+    p = out["profiles"]["p1"]
+    assert list(out["profiles"]) == ["p1"]
+    assert p["color"] is None and p["icon"] == "mdi:account-group"
+    assert p["panels"] == {"a": "allow"}
+    assert p["kiosk"] == {"all": {"hide_header": True}, "dashboards": {}}
+    assert out["users"]["u1"]["profiles"] == ["p1"] and out["users"]["u1"]["panels"] == {}
+    assert out["users"]["u1"]["managed"] is True
+    assert out["settings"]["default_access"] == "allow" and out["settings"]["restrict_admins"] is False
+    assert out["devices"]["d1"] == {"name": "d1", "kiosk": None}

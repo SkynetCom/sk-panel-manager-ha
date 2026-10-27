@@ -42,18 +42,69 @@ export function readBackup(data, users) {
       report.dropped.push(names[id] || id);
     }
   }
-  // Fill what an older or hand-edited file may lack, so the panel can show it (the server validates on save).
-  const obj = (v) => (v && typeof v === "object" && !Array.isArray(v) ? v : {});
-  config.users = Object.fromEntries(Object.entries(out).map(([id, u]) => [id, {
-    profiles: [], panels: {}, panel_order: null, default_panel: null, kiosk: null, managed: true, ...obj(u),
-  }]));
-  config.settings = obj(config.settings);
-  config.profiles = Object.fromEntries(Object.entries(obj(config.profiles)).map(([id, p]) => [id, {
-    name: id, icon: "mdi:account-group", color: null, panels: {}, panel_order: null, default_panel: null, kiosk: null, ...obj(p),
-  }]));
-  config.devices = obj(config.devices);
-  if (!("kiosk" in config)) config.kiosk = null;
+  // The file may be old or hand-edited (or hostile): keep only well-formed values, with the same
+  // rules as the server (model.py), before anything reaches the editor. The server validates on save too.
+  config.profiles = Object.fromEntries(Object.entries(obj(config.profiles))
+    .filter(([id]) => ID_RE.test(id)).map(([id, p]) => [id, cleanProfile(id, obj(p))]));
+  const profileIds = new Set(Object.keys(config.profiles));
+  config.users = Object.fromEntries(Object.entries(out).map(([id, u]) => [id, cleanUser(obj(u), profileIds)]));
+  config.settings = cleanSettings(obj(config.settings));
+  config.devices = Object.fromEntries(Object.entries(obj(config.devices))
+    .filter(([id]) => ID_RE.test(id)).map(([id, d]) => [id, { name: str(obj(d).name, id), kiosk: cleanKiosk(obj(d).kiosk) }]));
+  config.kiosk = cleanKiosk(config.kiosk);
   return { config, report };
+}
+
+
+// ---------------------------------------------------------------- cleaning (mirror of model.py)
+const ID_RE = /^[A-Za-z0-9_\-.]{1,64}$/;
+const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
+const ICON_RE = /^mdi:[a-z0-9-]{1,64}$/;
+const obj = (v) => (v && typeof v === "object" && !Array.isArray(v) ? v : {});
+const str = (v, fallback) => (typeof v === "string" && v.trim() ? v.trim().slice(0, 60) : fallback);
+const panelId = (p) => typeof p === "string" && p.length > 0 && p.length <= 100 && !p.includes("/");
+const access = (v) => Object.fromEntries(Object.entries(obj(v)).filter(([p, a]) => panelId(p) && (a === "allow" || a === "deny")));
+const order = (v) => {
+  const list = Array.isArray(v) ? [...new Set(v.filter(panelId))] : [];
+  return list.length ? list : null;
+};
+const opts = (v) => Object.fromEntries(Object.entries(obj(v)).filter(([k, b]) => /^[a-z_]{1,40}$/.test(k) && typeof b === "boolean"));
+
+function cleanKiosk(v) {
+  if (!v || typeof v !== "object") return null;
+  const k = { all: opts(v.all), dashboards: Object.fromEntries(Object.entries(obj(v.dashboards))
+    .filter(([p]) => panelId(p)).map(([p, o]) => [p, opts(o)]).filter(([, o]) => Object.keys(o).length)) };
+  return Object.keys(k.all).length || Object.keys(k.dashboards).length ? k : null;
+}
+
+function cleanProfile(id, p) {
+  return {
+    name: str(p.name, id),
+    icon: typeof p.icon === "string" && ICON_RE.test(p.icon) ? p.icon : "mdi:account-group",
+    color: typeof p.color === "string" && COLOR_RE.test(p.color) ? p.color : null,
+    panels: access(p.panels),
+    panel_order: order(p.panel_order),
+    default_panel: panelId(p.default_panel) ? p.default_panel : null,
+    kiosk: cleanKiosk(p.kiosk),
+  };
+}
+
+function cleanUser(u, profileIds) {
+  return {
+    profiles: Array.isArray(u.profiles) ? [...new Set(u.profiles.filter((p) => typeof p === "string" && profileIds.has(p)))] : [],
+    panels: access(u.panels),
+    panel_order: order(u.panel_order),
+    default_panel: panelId(u.default_panel) ? u.default_panel : null,
+    kiosk: cleanKiosk(u.kiosk),
+    managed: u.managed !== false,
+  };
+}
+
+function cleanSettings(v) {
+  const out = { default_access: "allow", restrict_admins: false, lock_sidebar_editing: true, redirect_forbidden: true };
+  if (v.default_access === "allow" || v.default_access === "deny") out.default_access = v.default_access;
+  for (const k of ["restrict_admins", "lock_sidebar_editing", "redirect_forbidden"]) if (typeof v[k] === "boolean") out[k] = v[k];
+  return out;
 }
 
 // ---------------------------------------------------------------- Kiosk Mode

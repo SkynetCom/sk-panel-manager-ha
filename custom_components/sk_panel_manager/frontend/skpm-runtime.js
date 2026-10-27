@@ -70,7 +70,12 @@
   }
 
   function currentPanel() {
-    return decodeURIComponent(location.pathname.split("/")[1] || "");
+    const part = location.pathname.split("/")[1] || "";
+    try {
+      return decodeURIComponent(part);
+    } catch (_) {
+      return part;  // malformed address: compare it as is
+    }
   }
 
   // Where a user lands when the panel they opened is hidden.
@@ -168,8 +173,14 @@
   const sr = (el) => (el && el.shadowRoot) || null;
   const cssFor = (group, opts) => Object.entries(SELECTORS[group]).filter(([k]) => opts[k]).map(([, css]) => css).join("\n");
 
+  let kioskActive = false;  // something applied before: it must be cleaned up when options go away
+
   function applyKiosk() {
     const opts = kioskOptions();
+    const any = Object.keys(opts).length > 0;
+    // Users without kiosk options (most of them): no work at all on the page.
+    if (!any && !kioskActive) return;
+    kioskActive = any;
     const full = !!opts.kiosk;
     // Home Assistant's own kiosk mode hides the sidebar, the menu button and the header buttons.
     if (full !== nativeKiosk) {
@@ -198,7 +209,7 @@
     clearTimeout(applyTimer);
     applyTimer = setTimeout(applyKiosk, 30);
   }
-  setInterval(applyKiosk, 1000);
+  setInterval(() => { try { applyKiosk(); } catch (_) { /* next tick retries */ } }, 1000);
   window.addEventListener("location-changed", () => { scheduleApply(); setTimeout(applyKiosk, 400); });
 
   window.addEventListener("hass-more-info", (ev) => {
@@ -227,8 +238,9 @@
         if (id) sub.device_id = id;
         await conn.subscribeMessage((msg) => {
           rules = msg;
-          checkLocation();
-          applyKiosk();
+          // Never let an error here reach Home Assistant's websocket message loop.
+          try { checkLocation(); } catch (err) { console.warn("SK Panel Manager:", err); }
+          try { applyKiosk(); } catch (err) { console.warn("SK Panel Manager:", err); }
         }, sub);
         return;
       } catch (err) {

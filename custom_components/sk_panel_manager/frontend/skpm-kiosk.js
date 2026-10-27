@@ -1,6 +1,6 @@
 // Kiosk tab of the SK Panel Manager panel: layers (general, profiles, users, devices), per-dashboard
 // overrides, option groups and a mock of Home Assistant showing what gets hidden.
-import { resolveKioskFor, unmanagedReason } from "./skpm-resolver.js?v=1.0.0";
+import { resolveKioskFor, unmanagedReason } from "./skpm-resolver.js?v=1.0.1";
 
 export const KIOSK_GROUPS = {
   screen: [["kiosk", "mdi:monitor-lock"], ["hide_header", "mdi:page-layout-header"], ["hide_sidebar", "mdi:page-layout-sidebar-left"], ["hide_menubutton", "mdi:menu"]],
@@ -10,6 +10,8 @@ export const KIOSK_GROUPS = {
   interaction: [["block_context_menu", "mdi:gesture-tap-hold"], ["block_mouse", "mdi:cursor-default-click-outline"]],
 };
 
+// Only "#rrggbb" may reach a style attribute (values can come from an imported file).
+const cssColor = (c) => (typeof c === "string" && /^#[0-9a-fA-F]{6}$/.test(c) ? c : null);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const icon = (name) => `<ha-icon icon="${esc(name)}"></ha-icon>`;
 
@@ -89,7 +91,7 @@ export const KioskMixin = (Base) => class extends Base {
       if (!items.length && g !== "devices") return "";
       return `<div class="lgroup">${esc(t(`k_group_${g}`))}</div>` + (items.length ? items.map((l) => {
         const n = this._kCount(this._kGet(l.key));
-        const av = l.user ? this._avatar(l.user, "sm") : `<span class="icon-box" style="--c:${l.color || "#5c6bc0"};width:30px;height:30px">${icon(l.icon)}</span>`;
+        const av = l.user ? this._avatar(l.user, "sm") : `<span class="icon-box" style="--c:${cssColor(l.color) || "#5c6bc0"};width:30px;height:30px">${icon(l.icon)}</span>`;
         const mine = l.id && l.id === thisDevice() ? `<span class="badge">${esc(t("k_this_device"))}</span>` : "";
         const off = l.user && unmanagedReason(this._draft, l.user) ? "dim" : "";
         return `<button class="item ${l.key === this._kSel ? "sel" : ""} ${off}" data-action="k-sel" data-key="${esc(l.key)}">${av}
@@ -117,7 +119,7 @@ export const KioskMixin = (Base) => class extends Base {
       </div>` : "";
 
     const head = `<div class="card"><div class="dhead">
-        ${layer.user ? this._avatar(layer.user, "lg") : `<span class="icon-box" style="--c:${layer.color || "#5c6bc0"};width:56px;height:56px;border-radius:16px">${icon(layer.icon)}</span>`}
+        ${layer.user ? this._avatar(layer.user, "lg") : `<span class="icon-box" style="--c:${cssColor(layer.color) || "#5c6bc0"};width:56px;height:56px;border-radius:16px">${icon(layer.icon)}</span>`}
         <div style="flex:1;min-width:0"><h2>${esc(layer.name)}</h2><div class="muted small" style="margin-top:4px">${esc(note)}</div></div>
         ${kind === "device" ? `<button class="btn danger" data-action="k-forget" data-id="${esc(layer.id)}">${icon("mdi:delete-outline")}${esc(t("k_forget"))}</button>` : ""}
       </div>${deviceInfo}</div>`;
