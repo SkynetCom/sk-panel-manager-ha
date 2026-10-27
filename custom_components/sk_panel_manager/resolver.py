@@ -161,3 +161,67 @@ def restore_hidden(current: list[str], previously_enforced: list[str], snapshot:
     """Hidden panels when the integration lets a user go: drop what we hid, keep their own."""
     original = set(snapshot or [])
     return [p for p in current if p not in previously_enforced or p in original]
+
+
+def _layer(kiosk: dict | None, panel: str | None) -> list[dict[str, bool]]:
+    """Options of one layer: the "all dashboards" part, then the override for this dashboard."""
+    if not kiosk:
+        return []
+    out = [kiosk.get("all") or {}]
+    if panel is not None and panel in (kiosk.get("dashboards") or {}):
+        out.append(kiosk["dashboards"][panel])
+    return out
+
+
+def _merge_profiles(layers: list[dict[str, bool]]) -> dict[str, bool]:
+    """Several profiles: an option turned on by any of them is on."""
+    out: dict[str, bool] = {}
+    for opts in layers:
+        for key, value in opts.items():
+            out[key] = out.get(key, False) or value
+    return out
+
+
+def kiosk_panels(config: dict) -> set[str]:
+    """Dashboards with their own kiosk overrides, in any layer."""
+    layers = [config.get("kiosk")]
+    layers += [p.get("kiosk") for p in config["profiles"].values()]
+    layers += [u.get("kiosk") for u in config["users"].values()]
+    layers += [d.get("kiosk") for d in config.get("devices", {}).values()]
+    return {p for k in layers if k for p in (k.get("dashboards") or {})}
+
+
+def resolve_kiosk_for(config: dict, user: UserInfo, device_id: str | None, panel: str | None) -> dict[str, bool]:
+    """Kiosk options on one dashboard, from weakest to strongest layer:
+    global → profiles → user → device; inside each layer the dashboard override wins.
+
+    Global, profile and user layers only apply to managed users. The device layer applies to
+    whoever uses that device (a wall tablet stays a wall tablet).
+    """
+    out: dict[str, bool] = {}
+    if unmanaged_reason(config, user) is None:
+        for opts in _layer(config.get("kiosk"), panel):
+            out.update(opts)
+        user_cfg = config["users"].get(user.id) or {}
+        profiles = [config["profiles"][p] for p in user_cfg.get("profiles", []) if p in config["profiles"]]
+        for part in (0, 1):  # "all" of every profile first, then their dashboard overrides
+            merged = _merge_profiles([layers[part] for layers in (_layer(p.get("kiosk"), panel) for p in profiles)
+                                      if len(layers) > part])
+            out.update(merged)
+        for opts in _layer(user_cfg.get("kiosk"), panel):
+            out.update(opts)
+    device = (config.get("devices") or {}).get(device_id) if device_id else None
+    for opts in _layer((device or {}).get("kiosk"), panel):
+        out.update(opts)
+    return {k: v for k, v in out.items() if v}
+
+
+def resolve_kiosk(config: dict, user: UserInfo, device_id: str | None) -> dict[str, Any]:
+    """Everything the browser needs: the options for any dashboard, plus dashboards that differ."""
+    default = resolve_kiosk_for(config, user, device_id, None)
+    dashboards = {}
+    for panel in sorted(kiosk_panels(config)):
+        opts = resolve_kiosk_for(config, user, device_id, panel)
+        if opts != default:
+            dashboards[panel] = opts
+    return {"default": default, "dashboards": dashboards}

@@ -2,6 +2,18 @@
 
 🇬🇧 English · 🇪🇸 [Español](CHANGELOG.es.md)
 
+## 0.4.0 — 2026-10-27
+- **Kiosk mode editor** (new *Kiosk* tab): full kiosk, hide header, sidebar and menu button; hide search, Assist, edit and ⋮
+  in the header; hide Settings, Notifications and Profile in the sidebar; block entity dialogs or hide their ⚙ and ⋮;
+  block the context menu or all touch/mouse input.
+- **Layers:** general → profiles → user → device, each with *Inherit / On / Off* and its own overrides for single dashboards.
+  A live mock of Home Assistant shows what each layer hides.
+- **Devices:** every browser or app that opens Home Assistant is listed with its last user; name it and give it its own kiosk.
+  Device settings apply to whoever uses it. Admins can turn the kiosk off in one tab with `?skpm_disable`.
+- Full kiosk uses Home Assistant's own kiosk mode; the other options use Home Assistant events or a small stylesheet, with
+  every selector in one place and checked against a real Home Assistant 2026.2.
+- Avatars use letters only for their initials ("Ana (admin)" → "AA").
+
 ## 0.3.0 — 2026-10-26
 - **Browser module**, loaded automatically on every page. For managed users only:
   - **Lock sidebar editing:** the profile's *Edit* button and the sidebar long-press show a notice instead of the editor.

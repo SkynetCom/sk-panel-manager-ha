@@ -97,7 +97,7 @@ def test_normalize_drops_invalid_data():
     config = cfg(
         settings={"default_access": "maybe", "lock_sidebar_editing": "yes"},
         profiles={"bad id!": {}, "ok": {"color": "red", "icon": "x", "panels": {"a": "allow", "b": "nope"},
-                                         "kiosk": {"hide_header": True, "unknown": True}}},
+                                         "kiosk": {"all": {"hide_header": True, "unknown": True}}}},
         users={"u1": {"profiles": ["ok", "missing", "ok"], "managed": False}},
     )
     assert config["settings"] == model.DEFAULT_SETTINGS
@@ -105,7 +105,7 @@ def test_normalize_drops_invalid_data():
     profile = config["profiles"]["ok"]
     assert profile["color"] is None and profile["icon"] == "mdi:account-group"
     assert profile["panels"] == {"a": "allow"}
-    assert profile["kiosk"] == {"hide_header": True}
+    assert profile["kiosk"] == {"all": {"hide_header": True}, "dashboards": {}}
     assert config["users"]["u1"]["profiles"] == ["ok"]
     assert config["users"]["u1"]["managed"] is False
 
@@ -121,3 +121,28 @@ def test_normalize_drops_invalid_data():
 def test_validate_rejects(data):
     with pytest.raises(model.InvalidConfig):
         model.validate_config(data)
+
+
+def test_kiosk_layers_and_dashboard_overrides():
+    config = cfg(
+        kiosk={"all": {"hide_search": True}},
+        profiles={
+            "kids": {"kiosk": {"all": {"hide_header": True}, "dashboards": {"energy": {"hide_header": False}}}},
+            "wall": {"kiosk": {"all": {"block_more_info": True}}},
+        },
+        users={"kid": {"profiles": ["kids", "wall"], "kiosk": {"all": {"hide_search": False}}}},
+        devices={"tab1": {"name": "Kitchen", "kiosk": {"all": {"kiosk": True}, "dashboards": {"energy": {"kiosk": False}}}}},
+    )
+    k = resolver.resolve_kiosk(config, KID, None)
+    assert k["default"] == {"hide_header": True, "block_more_info": True}  # user turned search back on
+    assert k["dashboards"] == {"energy": {"block_more_info": True}}       # profile override on energy
+    k = resolver.resolve_kiosk(config, KID, "tab1")
+    assert k["default"] == {"hide_header": True, "block_more_info": True, "kiosk": True}
+    assert k["dashboards"]["energy"] == {"block_more_info": True}         # device override on energy
+
+
+def test_kiosk_device_layer_applies_to_unmanaged_users():
+    config = cfg(kiosk={"all": {"hide_header": True}}, devices={"tab1": {"kiosk": {"all": {"kiosk": True}}}})
+    owner = U("o", is_owner=True, is_admin=True)
+    assert resolver.resolve_kiosk(config, owner, None)["default"] == {}
+    assert resolver.resolve_kiosk(config, owner, "tab1")["default"] == {"kiosk": True}

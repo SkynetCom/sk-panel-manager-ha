@@ -19,7 +19,7 @@
 
 <p align="center">
   <b>Decidí qué paneles y dashboards ve cada usuario de Home Assistant</b>, desde un único panel visual.<br>
-  Matriz de acceso, perfiles como <i>Chicos</i>, <i>Invitados</i> o <i>Tablet de pared</i>, dashboard por defecto por usuario y barra lateral bloqueada.<br>
+  Matriz de acceso, perfiles como <i>Chicos</i>, <i>Invitados</i> o <i>Tablet de pared</i>, dashboard por defecto por usuario, barra lateral bloqueada<br>y <b>modo kiosk visual</b> por usuario, perfil, dispositivo y dashboard.<br>
   Sin YAML, sin tocar cada dashboard y sin que se rompa con cada actualización de Home Assistant.<br>
   <sub>🇬🇧 <a href="https://github.com/SkynetCom/sk-panel-manager-ha/blob/main/README.md">English</a> · 🇪🇸 Español</sub>
 </p>
@@ -78,6 +78,14 @@ El **dueño nunca se restringe**, así que no te podés quedar afuera. Los admin
 <tr>
 <td colspan="3" valign="top">
 
+### 🖥️ Modo kiosk visual
+Ocultá el encabezado, la barra lateral, botones sueltos (búsqueda, Assist, editar, ⋮), elementos de la barra, partes de los diálogos de entidades, o activá un **kiosk completo**, todo con interruptores. Los ajustes van por capas (**todos → perfil → usuario → dispositivo**) y cada capa puede hacer algo distinto **en un dashboard**. Una maqueta de Home Assistant en vivo muestra qué se oculta. Ponele nombre a tus **dispositivos** ("Tablet cocina") y dales su propio kiosk. [Ver la sección Kiosk ↓](#%EF%B8%8F-modo-kiosk)
+
+</td>
+</tr>
+<tr>
+<td colspan="3" valign="top">
+
 ### 🧱 Construido sobre Home Assistant, no encima
 La integración escribe la barra lateral y el dashboard por defecto de cada usuario en el **almacenamiento por usuario de Home Assistant**, el mismo que usa *Editar barra lateral* del perfil. El módulo del navegador solo escucha eventos propios de Home Assistant (diálogos y navegación). Nunca toca la estructura de la página, así que **las actualizaciones del frontend no lo rompen**. Que se rompan después de cada actualización es la queja más común de los plugins tipo kiosk.
 
@@ -110,6 +118,24 @@ La integración escribe la barra lateral y el dashboard por defecto de cada usua
 </tr>
 </table>
 
+## 🖥️ Modo kiosk
+
+<p align="center"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/kiosk.es.png" alt="Editor de kiosk" width="100%"><br><sub><b>Editor de kiosk</b>: capas a la izquierda, un ajuste propio para el dashboard <i>Chicos</i>, interruptores de tres estados y una maqueta de Home Assistant (lo oculto queda marcado en rojo).</sub></p>
+
+| Grupo | Opciones |
+|---|---|
+| Pantalla | Kiosk completo · ocultar encabezado · ocultar barra lateral · ocultar botón de menú |
+| Botones del encabezado | Búsqueda · Assist · Editar dashboard · menú ⋮ |
+| Elementos de la barra | Configuración · Notificaciones · Perfil |
+| Diálogos de entidades | Bloquear el diálogo · ocultar su botón ⚙ · ocultar su menú ⋮ (historial, registro, relacionados, atributos) |
+| Interacción | Bloquear el menú del click derecho / pulsación larga · bloquear toque y mouse (pantallas solo para mirar) |
+
+**Cómo se combinan las capas:** *General* (todos los usuarios gestionados) → los **perfiles** del usuario (una opción activada por cualquier perfil queda activada) → el **usuario** → el **dispositivo**. Dentro de cada capa, un ajuste para un dashboard puntual gana sobre el de "todos los dashboards". Cada opción tiene *Heredar / Sí / No*, así que una capa más fuerte puede volver a apagar algo.
+
+**Dispositivos:** cada navegador o app que abre Home Assistant aparece en la lista *Dispositivos* con su último usuario. Ponele nombre y un kiosk. Los ajustes del dispositivo se aplican a **quien use ese dispositivo**, incluidos los administradores: una tablet de pared sigue siendo una tablet de pared.
+
+**Cómo salir:** un administrador puede apagar el kiosk en una pestaña agregando `?skpm_disable` a la dirección, y volver a prenderlo con `?skpm_enable`. Para cualquier otro usuario el parámetro no hace nada.
+
 ## 🆚 Comparado con las opciones habituales
 
 | | Home Assistant solo | Kiosk Mode | Custom Sidebar | **SK Panel Manager** |
@@ -122,9 +148,11 @@ La integración escribe la barra lateral y el dashboard por defecto de cada usua
 | Usuarios por **ID** (renombrar no rompe las reglas) | — | ❌ | ❌ | ✅ |
 | No depende de la estructura de la página del frontend | ✅ | ❌ | ❌ | ✅ |
 | Reglas que no se leen sin iniciar sesión | ✅ | ✅ | ❌ | ✅ |
-| Ocultar encabezado / modo kiosk | Parcial | ✅ | ❌ | 🔜 v1.0 |
+| Ocultar encabezado / modo kiosk | Parcial | ✅ | ❌ | ✅ |
+| Editor visual de kiosk con vista previa | — | ❌ | — | ✅ |
+| Kiosk por **dispositivo** (tablets con nombre) | — | Parcial | — | ✅ |
 
-Kiosk Mode y Custom Sidebar son muy buenos proyectos y hacen cosas que este (todavía) no hace. Si solo necesitás ocultar el encabezado en una tablet de pared, Kiosk Mode sigue siendo una buena opción. SK Panel Manager es para administrar **quién ve qué** en toda una casa o empresa, de forma visual.
+Kiosk Mode y Custom Sidebar son muy buenos proyectos. Kiosk Mode todavía ofrece cosas que este no, como plantillas JavaScript/Jinja y algunas opciones extra de diálogos. SK Panel Manager es para administrar **quién ve qué** en toda una casa o empresa, de forma visual.
 
 ## 🚀 Instalación
 
@@ -178,6 +206,7 @@ Para **datos sensibles** (cámaras, alarma, cerraduras), usá **dashboards solo 
 - **Qué escribe:** `sidebar` (`hiddenPanels`, `panelOrder`) y `core.default_panel` en `.storage/frontend.user_data_<id>` de cada usuario gestionado, los mismos datos que edita la página del perfil. Antes del primer cambio guarda una copia de lo que tenía el usuario y la restaura cuando se lo libera o se quita la integración.
 - **Reaplicación:** escucha los cambios en la barra de cada usuario, los usuarios nuevos y los paneles nuevos (un dashboard que crees después sigue las reglas al instante).
 - **Módulo del navegador:** `skpm-runtime.js` bloquea el diálogo `dialog-edit-sidebar` y vigila la navegación. No hace nada con los usuarios que no se gestionan.
+- **Kiosk:** el *kiosk completo* usa el modo kiosk propio de Home Assistant (`hass-kiosk-mode`). Bloquear diálogos y menús usa los eventos de Home Assistant. Ocultar partes sueltas usa una hoja de estilos chica en la parte de la página que corresponde. Todos los selectores están en un solo bloque al principio de `skpm-runtime.js` y se verificaron contra un Home Assistant 2026.2 real.
 - **Paneles ocultos por defecto:** Home Assistant oculta algunos dashboards propios (Luces, Clima, Seguridad) hasta que el usuario los activa. Siguen así salvo que una regla los muestre explícitamente.
 
 ## ❓ Preguntas frecuentes
@@ -204,7 +233,12 @@ No. Los paneles nuevos siguen la política general de *Ajustes*. Con *Mostrarlos
 
 <details><summary><b>¿Lo puedo usar junto con Kiosk Mode?</b></summary>
 
-Sí. SK Panel Manager no toca el YAML de los dashboards. Kiosk Mode puede seguir ocultando encabezados en tus tablets hasta que llegue el editor de kiosk propio.
+Sí, SK Panel Manager no toca el YAML de los dashboards. Evitá activar la misma opción en los dos para el mismo dashboard, o no vas a saber cuál la está ocultando.
+</details>
+
+<details><summary><b>Una tablet quedó trabada en modo kiosk. ¿Cómo salgo?</b></summary>
+
+Iniciá sesión como administrador en ella y agregá `?skpm_disable` a la dirección (por ejemplo `http://homeassistant.local:8123/lovelace/0?skpm_disable`). El kiosk queda apagado en esa pestaña hasta que agregues `?skpm_enable` o la cierres. También podés cambiar los ajustes del dispositivo desde cualquier otro.
 </details>
 
 <details><summary><b>Un usuario sigue viendo un panel que oculté</b></summary>
@@ -217,8 +251,7 @@ Revisá la pestaña **Usuarios**: la vista previa muestra el resultado final y c
 - [x] Motor de reglas con perfiles, dashboard por defecto y orden (0.1)
 - [x] Panel visual: resumen, matriz de acceso, usuarios, perfiles, ajustes (0.2)
 - [x] Módulo del navegador: bloqueo de la edición de la barra y redirección de paneles ocultos (0.3)
-- [ ] **Editor de modo kiosk**: ocultar encabezado, barra, búsqueda, asistente y partes de los diálogos, por usuario, perfil, dispositivo y dashboard
-- [ ] **Dispositivos** con nombre ("Tablet cocina") y su propio kiosk
+- [x] **Editor de modo kiosk** por usuario, perfil, dispositivo y dashboard, y **dispositivos** con nombre (0.4)
 - [ ] **Ver como…**: ver cualquier usuario en cualquier dispositivo y por qué
 - [ ] **Importar desde Kiosk Mode**: convertir el YAML `kiosk_mode:` existente en reglas
 - [ ] Backup: exportar e importar la configuración

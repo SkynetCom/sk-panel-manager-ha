@@ -242,9 +242,56 @@ ul.sec li ha-icon { --mdc-icon-size: 18px; flex: none; }
 .toast.err { background: var(--pm-red); }
 @keyframes fade { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
 
+/* kiosk */
+.detail.kdetail { grid-template-columns: minmax(0, 1fr) 360px; }
+.mock { height: 260px !important; }
+.lgroup { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--pm-muted); font-weight: 600; padding: 12px 10px 4px; }
+.lgroup:first-child { padding-top: 4px; }
+.item.dim { opacity: .6; }
+.scopes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.scopes .chip { padding: 6px 12px; font-size: 13px; }
+.scopes .chip .x { border: 0; background: none; color: inherit; padding: 0 0 0 4px; display: inline-grid; opacity: .8; }
+.scopes .chip .x ha-icon { --mdc-icon-size: 14px; }
+.scopes .addscope { width: auto; padding: 6px 10px; border-radius: 99px; font-size: 13px; border-style: dashed; }
+.mock { position: relative; display: flex; height: 230px; margin: 0 14px; border-radius: 12px; overflow: hidden; border: 1px solid var(--pm-line); background: var(--pm-bg); font-size: 11px; }
+.mock ha-icon { --mdc-icon-size: 14px; color: var(--pm-muted); }
+.mock .off { opacity: .22; outline: 1.5px dashed var(--pm-red); outline-offset: -2px; }
+.m-side { width: 34%; background: var(--pm-card); border-right: 1px solid var(--pm-line); display: flex; flex-direction: column; padding: 4px 0; transition: opacity .2s; }
+.m-row { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 6px; margin: 0 4px; }
+.m-row.act { background: var(--pm-soft); }
+.m-top { margin-bottom: 4px; }
+.m-dot { width: 12px; height: 12px; border-radius: 4px; background: var(--pm-line); flex: none; }
+.m-row.act .m-dot { background: var(--pm-primary); }
+.m-line { height: 6px; border-radius: 3px; background: var(--pm-line); display: block; }
+.w60 { width: 60%; } .w50 { width: 50%; } .w40 { width: 40%; }
+.m-spacer { flex: 1; }
+.m-main { flex: 1; position: relative; min-width: 0; display: flex; flex-direction: column; }
+.m-head { display: flex; align-items: center; gap: 6px; padding: 7px 8px; background: var(--app-header-background-color, var(--pm-card)); border-bottom: 1px solid var(--pm-line); color: var(--app-header-text-color, var(--pm-text)); }
+.m-head ha-icon { color: inherit; }
+.m-head .m-ic { display: inline-grid; padding: 1px; border-radius: 4px; }
+.m-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; }
+.m-card { height: 34px; border-radius: 8px; background: var(--pm-card); border: 1px solid var(--pm-line); }
+.m-dialog { position: absolute; right: 8px; bottom: 8px; width: 62%; background: var(--pm-card); border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,.18); border: 1px solid var(--pm-line); overflow: hidden; }
+.m-dhead { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-bottom: 1px solid var(--pm-line); }
+.m-dhead .m-ic { display: inline-grid; }
+.m-dbody { padding: 10px 8px; display: flex; justify-content: center; }
+.m-toggle { width: 34px; height: 18px; border-radius: 99px; background: var(--pm-primary); opacity: .7; }
+.m-dialog.blocked > :not(.m-block) { opacity: .25; }
+.m-block { position: absolute; inset: 0; display: grid; place-items: center; }
+.m-block ha-icon { --mdc-icon-size: 36px; color: var(--pm-red); }
+.m-nomouse { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: color-mix(in srgb, var(--pm-card) 55%, transparent); font-weight: 600; }
+.m-nomouse ha-icon { --mdc-icon-size: 30px; color: var(--pm-red); }
+.m-legend { display: flex; gap: 14px; padding: 10px 16px 4px; font-size: 12px; color: var(--pm-muted); }
+.m-legend .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--pm-line); margin-right: 6px; vertical-align: -2px; }
+.m-legend .sw.off { background: none; outline: 1.5px dashed var(--pm-red); outline-offset: -2px; }
+.m-note { display: flex; gap: 6px; align-items: center; padding: 6px 16px 12px; font-size: 12px; color: var(--pm-muted); }
+.m-note ha-icon { --mdc-icon-size: 16px; }
+.sb .m-legend + .m-note, .sb .m-legend { padding-bottom: 12px; }
+.prow .pt .badge { margin-top: 4px; display: inline-block; }
+
 @media (max-width: 1100px) {
   .ov { grid-template-columns: 1fr; }
-  .detail { grid-template-columns: 1fr; }
+  .detail, .detail.kdetail { grid-template-columns: minmax(0, 1fr); }
   .sb { position: static; }
 }
 @media (max-width: 760px) {

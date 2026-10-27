@@ -26,15 +26,20 @@ class PanelManagerStore:
         self.config: dict[str, Any] = normalize_config({})
         self.applied: dict[str, dict[str, Any]] = {}
         self.snapshots: dict[str, dict[str, Any]] = {}
+        # Browsers seen by the browser module: {device_id: {last_user, last_seen, user_agent}}.
+        self.device_status: dict[str, dict[str, Any]] = {}
 
     async def async_load(self) -> None:
         data = await self._store.async_load() or {}
         self.config = normalize_config(data.get("config"))
         self.applied = data.get("applied") if isinstance(data.get("applied"), dict) else {}
         self.snapshots = data.get("snapshots") if isinstance(data.get("snapshots"), dict) else {}
+        status = data.get("device_status")
+        self.device_status = status if isinstance(status, dict) else {}
 
     def _data(self) -> dict[str, Any]:
-        return {"config": self.config, "applied": self.applied, "snapshots": self.snapshots}
+        return {"config": self.config, "applied": self.applied, "snapshots": self.snapshots,
+                "device_status": self.device_status}
 
     def schedule_save(self) -> None:
         self._store.async_delay_save(self._data, SAVE_DELAY)

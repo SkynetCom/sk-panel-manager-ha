@@ -100,11 +100,23 @@ let config = {
     u_guest: { profiles: ["p_guest"], panels: {}, panel_order: null, default_panel: null, kiosk: null, managed: true },
     u_jardinero: { profiles: ["p_guest"], panels: { "sk-irrigation": "allow", lovelace: "deny", "dashboard-tablet": "deny" }, panel_order: ["sk-irrigation"], default_panel: "sk-irrigation", kiosk: null, managed: true },
   },
-  kiosk: null,
+  devices: {
+    dev_kitchen: { name: L("Tablet de la cocina", "Kitchen wall tablet"), kiosk: { all: { kiosk: true, block_more_info: true }, dashboards: {} } },
+  },
+  kiosk: { all: { hide_assistant: true, hide_edit_dashboard: true }, dashboards: {} },
+};
+config.profiles.p_kids.kiosk = { all: { hide_header: false, hide_search: true, hide_dialog_overflow: true, hide_settings: true },
+  dashboards: { "dashboard-ninos": { hide_header: true, block_context_menu: true } } };
+config.profiles.p_guest.kiosk = { all: { hide_notifications: true, hide_dialog_settings: true }, dashboards: {} };
+const ago = (min) => new Date(Date.now() - min * 60000).toISOString();
+const deviceStatus = {
+  dev_kitchen: { last_user: "u_tablet", last_seen: ago(1), user_agent: "Mozilla/5.0 (Linux; Android 13) Home Assistant/2026.10" },
+  dev_tomi: { last_user: "u_tomi", last_seen: ago(40), user_agent: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0) Safari/604.1" },
+  dev_office: { last_user: "u_owner", last_seen: ago(60 * 26), user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/152.0" },
 };
 
 const payload = () => ({
-  version: PANEL_VERSION, config: JSON.parse(JSON.stringify(config)), catalog, users,
+  version: PANEL_VERSION, config: JSON.parse(JSON.stringify(config)), catalog, users, device_status: deviceStatus,
   effective: Object.fromEntries(users.map((u) => [u.id, resolve(config, u, catalog)])),
 });
 
@@ -115,6 +127,7 @@ const hass = {
     await new Promise((r) => setTimeout(r, 250));
     if (msg.type === "sk_panel_manager/config") return payload();
     if (msg.type === "sk_panel_manager/config/save") { config = JSON.parse(JSON.stringify(msg.config)); return payload(); }
+    if (msg.type === "sk_panel_manager/device/forget") { delete deviceStatus[msg.device_id]; delete config.devices[msg.device_id]; return payload(); }
     throw new Error(`Unknown command ${msg.type}`);
   },
 };
@@ -129,6 +142,8 @@ el.narrow = window.innerWidth < 870;
 if (q.get("tab")) el._tab = q.get("tab");
 if (q.get("user")) el._selUser = q.get("user");
 if (q.get("profile")) el._selProfile = q.get("profile");
+if (q.get("layer")) el._kSel = q.get("layer");
+if (q.get("scope")) el._kScope = q.get("scope");
 el.hass = hass;
 document.body.appendChild(el);
 </script>

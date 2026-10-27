@@ -19,7 +19,7 @@
 
 <p align="center">
   <b>Decide which panels and dashboards each Home Assistant user sees</b>, from one visual admin panel.<br>
-  An access matrix, profiles such as <i>Kids</i>, <i>Guests</i> or <i>Wall tablet</i>, a default dashboard per user and a locked sidebar.<br>
+  An access matrix, profiles such as <i>Kids</i>, <i>Guests</i> or <i>Wall tablet</i>, a default dashboard per user, a locked sidebar<br>and a <b>visual kiosk mode</b> per user, profile, device and dashboard.<br>
   No YAML, no editing every dashboard, and nothing that breaks with each Home Assistant update.<br>
   <sub>🇬🇧 English · 🇪🇸 <a href="https://github.com/SkynetCom/sk-panel-manager-ha/blob/main/README.es.md">Español</a></sub>
 </p>
@@ -78,6 +78,14 @@ The **owner is never restricted**, so you can't lock yourself out. Administrator
 <tr>
 <td colspan="3" valign="top">
 
+### 🖥️ Visual kiosk mode
+Hide the header, the sidebar, single buttons (search, Assist, edit, ⋮), sidebar items, parts of entity dialogs, or turn on a **full kiosk**, all with switches. Settings work in layers (**everyone → profile → user → device**), and each layer can do something different **on one dashboard**. A live mock of Home Assistant shows what gets hidden. Name your **devices** ("Kitchen tablet") and give them their own kiosk. [See the Kiosk section ↓](#%EF%B8%8F-kiosk-mode)
+
+</td>
+</tr>
+<tr>
+<td colspan="3" valign="top">
+
 ### 🧱 Built on Home Assistant, not on top of it
 The integration writes each user's sidebar and default dashboard to **Home Assistant's own per-user storage**, the same place the profile's *Edit sidebar* dialog uses. The browser module only listens to Home Assistant's own events (dialogs and navigation). It never reaches into the page structure, so **frontend updates don't break it**. Constant breakage after updates is the most common complaint about kiosk-style plugins.
 
@@ -110,6 +118,24 @@ The integration writes each user's sidebar and default dashboard to **Home Assis
 </tr>
 </table>
 
+## 🖥️ Kiosk mode
+
+<p align="center"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/kiosk.png" alt="Kiosk editor" width="100%"><br><sub><b>Kiosk editor</b>: layers on the left, an override for the <i>Kids</i> dashboard, three-state switches and a mock of Home Assistant (hidden parts are outlined in red).</sub></p>
+
+| Group | Options |
+|---|---|
+| Screen | Full kiosk · hide header · hide sidebar · hide menu button |
+| Header buttons | Search · Assist · Edit dashboard · ⋮ menu |
+| Sidebar items | Settings · Notifications · Profile |
+| Entity dialogs | Block the dialog entirely · hide its ⚙ button · hide its ⋮ menu (history, logbook, related, attributes) |
+| Interaction | Block the right-click / long-press menu · block touch and mouse (display-only screens) |
+
+**How layers combine:** *General* (every managed user) → the user's **profiles** (an option turned on by any profile is on) → the **user** → the **device**. Inside each layer, a setting for a specific dashboard beats the "all dashboards" one. Every option has *Inherit / On / Off*, so a lower layer can turn something back off.
+
+**Devices:** every browser or app that opens Home Assistant shows up in the *Devices* list with its last user. Give it a name and a kiosk. Device settings apply to **whoever uses that device**, including administrators: a wall tablet stays a wall tablet.
+
+**Getting out:** an administrator can turn the kiosk off in one browser tab by adding `?skpm_disable` to the address, and back on with `?skpm_enable`. For anyone else the parameter does nothing.
+
 ## 🆚 Compared with the usual options
 
 | | Home Assistant alone | Kiosk Mode | Custom Sidebar | **SK Panel Manager** |
@@ -122,9 +148,11 @@ The integration writes each user's sidebar and default dashboard to **Home Assis
 | Users matched by **ID** (renaming doesn't break rules) | — | ❌ | ❌ | ✅ |
 | Doesn't depend on the frontend's page structure | ✅ | ❌ | ❌ | ✅ |
 | Rules not readable without logging in | ✅ | ✅ | ❌ | ✅ |
-| Hide header / kiosk mode | Partial | ✅ | ❌ | 🔜 v1.0 |
+| Hide header / kiosk mode | Partial | ✅ | ❌ | ✅ |
+| Visual kiosk editor with a live preview | — | ❌ | — | ✅ |
+| Kiosk per **device** (named wall tablets) | — | Partial | — | ✅ |
 
-Kiosk Mode and Custom Sidebar are great projects and they do things this one doesn't (yet). If you only need to hide the header on one wall tablet, Kiosk Mode is still a fine choice. SK Panel Manager is for managing **who sees what** across a whole household or business, visually.
+Kiosk Mode and Custom Sidebar are great projects. Kiosk Mode still offers things this one doesn't, such as JavaScript/Jinja templates and a few extra dialog options. SK Panel Manager is for managing **who sees what** across a whole household or business, visually.
 
 ## 🚀 Installation
 
@@ -178,6 +206,7 @@ For **sensitive data** (cameras, alarm, locks), use **admin-only dashboards** (`
 - **What it writes:** `sidebar` (`hiddenPanels`, `panelOrder`) and `core.default_panel` in each managed user's `.storage/frontend.user_data_<id>`, the same data the profile page edits. Before the first change it keeps a copy of what the user had, and puts it back when the user is released or the integration is removed.
 - **Re-applying:** it listens for changes to each user's sidebar, new users and new panels (a dashboard you create later follows the rules right away).
 - **Browser module:** `skpm-runtime.js` blocks the `dialog-edit-sidebar` dialog and watches navigation. It does nothing for users who aren't managed.
+- **Kiosk:** *Full kiosk* uses Home Assistant's own kiosk mode (`hass-kiosk-mode`). Blocking dialogs and menus uses Home Assistant's events. Hiding single parts uses a small stylesheet in the matching part of the page. Every selector sits in one block at the top of `skpm-runtime.js`, and was checked against a real Home Assistant 2026.2.
 - **Panels hidden by default:** Home Assistant hides some built-in dashboards (Lights, Climate, Security) until a user turns them on. They stay that way unless a rule explicitly shows them.
 
 ## ❓ FAQ
@@ -204,7 +233,12 @@ No. New panels follow the global policy in *Settings*. With *Show them*, everyon
 
 <details><summary><b>Can I use it together with Kiosk Mode?</b></summary>
 
-Yes. SK Panel Manager doesn't touch dashboard YAML. Kiosk Mode can keep hiding headers on your tablets until the built-in kiosk editor arrives.
+Yes, SK Panel Manager doesn't touch dashboard YAML. Avoid turning on the same option in both on the same dashboard, or you won't know which one is hiding it.
+</details>
+
+<details><summary><b>A tablet is stuck in kiosk mode. How do I get out?</b></summary>
+
+Sign in as an administrator on it and add `?skpm_disable` to the address (for example `http://homeassistant.local:8123/lovelace/0?skpm_disable`). Kiosk is off in that tab until you add `?skpm_enable` or close it. You can also change the device's settings from any other device.
 </details>
 
 <details><summary><b>A user still sees a panel I hid</b></summary>
@@ -217,8 +251,7 @@ Check the **Users** tab: the preview shows the final result and each row explain
 - [x] Rules engine with profiles, default dashboard and order (0.1)
 - [x] Visual admin panel: overview, access matrix, users, profiles, settings (0.2)
 - [x] Browser module: locked sidebar editing and redirection of hidden panels (0.3)
-- [ ] **Kiosk mode editor**: hide header, sidebar, search, assistant and dialog parts, per user, profile, device and dashboard
-- [ ] Named **devices** ("Kitchen tablet") with their own kiosk settings
+- [x] **Kiosk mode editor** per user, profile, device and dashboard, and named **devices** (0.4)
 - [ ] **View as…**: preview any user on any device and see exactly why
 - [ ] **Import from Kiosk Mode**: turn existing `kiosk_mode:` YAML into rules
 - [ ] Backup: export and import the configuration

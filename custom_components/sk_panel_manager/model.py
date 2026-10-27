@@ -6,17 +6,12 @@ from typing import Any
 
 ACCESS_VALUES = ("allow", "deny")
 
-# Kiosk options, grouped as the editor shows them. Values are booleans.
+# Kiosk options, grouped as the editor shows them. Values are booleans; a missing key inherits.
 KIOSK_OPTIONS: dict[str, tuple[str, ...]] = {
-    "screen": (
-        "kiosk", "hide_header", "hide_sidebar", "hide_menubutton", "hide_search", "hide_assistant",
-        "hide_notifications", "hide_account", "hide_settings", "hide_overflow", "hide_edit_dashboard",
-        "hide_refresh",
-    ),
-    "dialogs": (
-        "hide_dialog_header", "hide_dialog_history", "hide_dialog_logbook", "hide_dialog_settings",
-        "hide_dialog_actions",
-    ),
+    "screen": ("kiosk", "hide_header", "hide_sidebar", "hide_menubutton"),
+    "header": ("hide_search", "hide_assistant", "hide_edit_dashboard", "hide_overflow"),
+    "sidebar": ("hide_settings", "hide_notifications", "hide_account"),
+    "dialogs": ("block_more_info", "hide_dialog_settings", "hide_dialog_overflow"),
     "interaction": ("block_context_menu", "block_mouse"),
 }
 KIOSK_KEYS = frozenset(k for group in KIOSK_OPTIONS.values() for k in group)
@@ -62,11 +57,27 @@ def normalize_order(value: Any) -> list[str] | None:
     return seen or None
 
 
-def normalize_kiosk(value: Any) -> dict[str, bool] | None:
+def normalize_kiosk_options(value: Any) -> dict[str, bool]:
+    if not isinstance(value, dict):
+        return {}
+    return {k: v for k, v in value.items() if k in KIOSK_KEYS and isinstance(v, bool)}
+
+
+def normalize_kiosk(value: Any) -> dict[str, Any] | None:
+    """A kiosk layer: options for every dashboard plus overrides for some dashboards."""
     if not isinstance(value, dict):
         return None
-    out = {k: bool(v) for k, v in value.items() if k in KIOSK_KEYS and isinstance(v, bool)}
-    return out or None
+    dashboards = value.get("dashboards") if isinstance(value.get("dashboards"), dict) else {}
+    out = {
+        "all": normalize_kiosk_options(value.get("all")),
+        "dashboards": {p: o for p, o in ((p, normalize_kiosk_options(o)) for p, o in dashboards.items() if _panel_id(p)) if o},
+    }
+    return out if out["all"] or out["dashboards"] else None
+
+
+def normalize_device(did: str, data: Any) -> dict[str, Any]:
+    data = data if isinstance(data, dict) else {}
+    return {"name": _name(data.get("name"), did), "kiosk": normalize_kiosk(data.get("kiosk"))}
 
 
 def _name(value: Any, fallback: str) -> str:
@@ -123,10 +134,13 @@ def normalize_config(data: Any) -> dict[str, Any]:
     profiles = {pid: normalize_profile(pid, p) for pid, p in raw_profiles.items() if _valid_id(pid)}
     raw_users = data.get("users") if isinstance(data.get("users"), dict) else {}
     users = {uid: normalize_user(u, set(profiles)) for uid, u in raw_users.items() if _valid_id(uid)}
+    raw_devices = data.get("devices") if isinstance(data.get("devices"), dict) else {}
+    devices = {did: normalize_device(did, d) for did, d in raw_devices.items() if _valid_id(did)}
     return {
         "settings": normalize_settings(data.get("settings")),
         "profiles": profiles,
         "users": users,
+        "devices": devices,
         "kiosk": normalize_kiosk(data.get("kiosk")),
     }
 
@@ -135,7 +149,7 @@ def validate_config(data: Any) -> dict[str, Any]:
     """Strict check for configurations saved from the panel, then normalise."""
     if not isinstance(data, dict):
         raise InvalidConfig("Configuration must be an object")
-    for section in ("profiles", "users"):
+    for section in ("profiles", "users", "devices"):
         value = data.get(section, {})
         if not isinstance(value, dict):
             raise InvalidConfig(f"'{section}' must be an object")

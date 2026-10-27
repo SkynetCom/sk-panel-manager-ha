@@ -33,6 +33,12 @@ CONFIGS = [
     {"settings": {"restrict_admins": True},
      "users": {"a1": {"panels": {"hassio": "deny", "lovelace": "deny"}, "default_panel": "lovelace"},
                "u2": {"managed": False}}},
+    {"kiosk": {"all": {"hide_search": True}, "dashboards": {"kids": {"hide_header": True}}},
+     "profiles": {"kids": {"kiosk": {"all": {"hide_header": True}, "dashboards": {"energy": {"hide_header": False}}}},
+                  "wall": {"kiosk": {"all": {"block_more_info": True, "hide_header": False}}}},
+     "users": {"u1": {"profiles": ["kids", "wall"], "kiosk": {"all": {"hide_search": False}}},
+               "u2": {"profiles": ["wall"]}},
+     "devices": {"tab1": {"name": "Kitchen", "kiosk": {"all": {"kiosk": True}, "dashboards": {"energy": {"kiosk": False}}}}}},
 ]
 
 
@@ -40,14 +46,17 @@ CONFIGS = [
 @pytest.mark.parametrize("raw", CONFIGS)
 def test_js_matches_python(raw, tmp_path):
     config = model.normalize_config(raw)
-    expected = {u.id: resolver.resolve(config, u, CATALOG).as_dict() for u in USERS}
+    expected = {u.id: {**resolver.resolve(config, u, CATALOG).as_dict(),
+                       "kiosk": resolver.resolve_kiosk(config, u, None),
+                       "kiosk_dev": resolver.resolve_kiosk(config, u, "tab1")} for u in USERS}
     script = tmp_path / "run.mjs"
     script.write_text(
-        f"import {{ resolve }} from {json.dumps(JS.as_uri())};\n"
+        f"import {{ resolve, resolveKiosk }} from {json.dumps(JS.as_uri())};\n"
         f"const config = {json.dumps(config)};\n"
         f"const catalog = {json.dumps([dataclasses.asdict(p) for p in CATALOG])};\n"
         f"const users = {json.dumps([dataclasses.asdict(u) for u in USERS])};\n"
-        "const out = {}; for (const u of users) out[u.id] = resolve(config, u, catalog);\n"
+        "const out = {}; for (const u of users) out[u.id] = {...resolve(config, u, catalog),"
+        " kiosk: resolveKiosk(config, u, null), kiosk_dev: resolveKiosk(config, u, 'tab1')};\n"
         "console.log(JSON.stringify(out));\n"
     )
     result = subprocess.run(["node", str(script)], capture_output=True, text=True, check=True)

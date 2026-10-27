@@ -2,6 +2,18 @@
 
 🇬🇧 [English](CHANGELOG.md) · 🇪🇸 Español
 
+## 0.4.0 — 2026-10-27
+- **Editor de modo kiosk** (nueva pestaña *Kiosk*): kiosk completo; ocultar encabezado, barra lateral y botón de menú;
+  ocultar búsqueda, Assist, editar y ⋮ del encabezado; ocultar Configuración, Notificaciones y Perfil de la barra; bloquear
+  los diálogos de entidades u ocultar sus ⚙ y ⋮; bloquear el menú contextual o todo toque y mouse.
+- **Capas:** general → perfiles → usuario → dispositivo, cada una con *Heredar / Sí / No* y ajustes propios para dashboards
+  puntuales. Una maqueta de Home Assistant en vivo muestra qué oculta cada capa.
+- **Dispositivos:** cada navegador o app que abre Home Assistant aparece con su último usuario; ponele nombre y su propio
+  kiosk. Los ajustes del dispositivo se aplican a quien lo use. Un admin puede apagar el kiosk en una pestaña con `?skpm_disable`.
+- El kiosk completo usa el modo kiosk propio de Home Assistant; el resto usa eventos de Home Assistant o una hoja de estilos
+  chica, con todos los selectores en un solo lugar y verificados contra un Home Assistant 2026.2 real.
+- Los avatares usan solo letras para las iniciales ("Ana (admin)" → "AA").
+
 ## 0.3.0 — 2026-10-26
 - **Módulo del navegador**, que se carga solo en todas las páginas. Solo para usuarios gestionados:
   - **Bloquear la edición de la barra:** el botón *Editar* del perfil y la pulsación larga en la barra muestran un aviso en vez del editor.

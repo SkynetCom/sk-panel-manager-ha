@@ -222,3 +222,50 @@ async def test_runtime_module_loaded_and_released_on_unload(hass: HomeAssistant,
     assert not any("skpm-runtime.js" in url for url in hass.data[DATA_EXTRA_MODULE_URL].urls)
     event = await user.receive_json()
     assert event["event"] == {"managed": False, "reason": "not_loaded"}
+
+
+async def test_devices_and_kiosk_over_websocket(hass: HomeAssistant, hass_ws_client, hass_read_only_user,
+                                                 hass_read_only_access_token):
+    _, enforcer = await _setup(hass)
+    await _save(hass, enforcer, {
+        "kiosk": {"all": {"hide_search": True}},
+        "users": {hass_read_only_user.id: {"kiosk": {"all": {"hide_header": True}}}},
+    })
+    user = await hass_ws_client(hass, hass_read_only_access_token)
+    await user.send_json_auto_id({"type": f"{DOMAIN}/subscribe", "device_id": "dev_tab1", "user_agent": "Test/1.0"})
+    assert (await user.receive_json())["success"]
+    event = (await user.receive_json())["event"]
+    assert event["kiosk"]["default"] == {"hide_search": True, "hide_header": True}
+    assert event["is_admin"] is False
+    assert enforcer.store.device_status["dev_tab1"]["last_user"] == hass_read_only_user.id
+
+    # The admin gives the device its own kiosk: the user's browser gets it live.
+    admin = await hass_ws_client(hass)
+    await admin.send_json_auto_id({"type": f"{DOMAIN}/config"})
+    payload = (await admin.receive_json())["result"]
+    assert "dev_tab1" in payload["device_status"]
+    config = payload["config"]
+    config["devices"] = {"dev_tab1": {"name": "Kitchen", "kiosk": {"all": {"kiosk": True}}}}
+    await admin.send_json_auto_id({"type": f"{DOMAIN}/config/save", "config": config})
+    assert (await admin.receive_json())["success"]
+    event = (await user.receive_json())["event"]
+    while not event["kiosk"]["default"].get("kiosk"):
+        event = (await user.receive_json())["event"]
+    assert event["kiosk"]["default"] == {"hide_search": True, "hide_header": True, "kiosk": True}
+
+    # Only admins can forget a device; forgetting drops its settings.
+    await user.send_json_auto_id({"type": f"{DOMAIN}/device/forget", "device_id": "dev_tab1"})
+    assert (await _result(user))["error"]["code"] == "unauthorized"
+    await admin.send_json_auto_id({"type": f"{DOMAIN}/device/forget", "device_id": "dev_tab1"})
+    result = (await admin.receive_json())["result"]
+    assert "dev_tab1" not in result["device_status"] and "dev_tab1" not in result["config"]["devices"]
+
+    await user.send_json_auto_id({"type": f"{DOMAIN}/subscribe", "device_id": "bad id!"})
+    assert (await _result(user))["error"]["code"] == "invalid_format"
+
+
+async def _result(ws):
+    """Next command result, skipping live events of earlier subscriptions."""
+    while (msg := await ws.receive_json())["type"] != "result":
+        pass
+    return msg
