@@ -269,3 +269,20 @@ async def _result(ws):
     while (msg := await ws.receive_json())["type"] != "result":
         pass
     return msg
+
+
+async def test_untouched_without_rules_and_diagnostics(hass: HomeAssistant):
+    kid = await _kid(hass)
+    entry, enforcer = await _setup(hass)
+    await _save(hass, enforcer, {})
+    store = await _store(hass, kid.id)
+    assert "sidebar" not in store.data  # nothing to enforce: no write
+
+    from custom_components.sk_panel_manager.diagnostics import async_get_config_entry_diagnostics
+
+    await _save(hass, enforcer, {"profiles": {"kids": {"name": "Kids of the Smiths"}},
+                                 "users": {kid.id: {"profiles": ["kids"], "panels": {"energy-dash": "deny"}}}})
+    diag = await async_get_config_entry_diagnostics(hass, entry)
+    text = str(diag)
+    assert kid.id not in text and "Kid" not in text and "Smiths" not in text
+    assert any(e["hidden"] == ["energy-dash"] for e in diag["effective"].values())

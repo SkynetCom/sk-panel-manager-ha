@@ -2,6 +2,13 @@
 
 🇬🇧 [English](CHANGELOG.md) · 🇪🇸 Español
 
+## 1.0.0 — 2026-10-27
+Primera versión estable.
+- **Diagnóstico:** *Ajustes → Dispositivos y servicios → SK Panel Manager → ⋮ → Descargar diagnóstico* ahora incluye las reglas
+  y su efecto, sin nombres ni ids de usuarios ni nombres de dispositivos. Adjuntalo cuando reportes un problema.
+- A un usuario sin barra guardada y sin reglas que aplicar ya no se le escribe nada: instalar la integración no toca la barra
+  de nadie hasta que una regla lo necesite.
+
 ## 0.5.0 — 2026-10-27
 - **Ver como…** (nueva pestaña): elegí un usuario, un dispositivo y un dashboard y mirá su barra lateral, la maqueta del
   kiosk y adónde lo manda un dashboard oculto, más una tabla **Por qué** con la regla o la capa detrás de cada panel y opción.

@@ -143,7 +143,9 @@ class PanelEnforcer:
         new_sidebar = {**current, "panelOrder": new_order, "hiddenPanels": new_hidden}
 
         changed = False
-        if new_sidebar != sidebar:
+        # A user with no stored sidebar and nothing to enforce is left alone (no empty write).
+        nothing_to_do = sidebar is None and not new_hidden and not new_order
+        if new_sidebar != sidebar and not nothing_to_do:
             await data.async_set_sidebar(new_sidebar)
             changed = True
 

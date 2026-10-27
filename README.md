@@ -292,6 +292,7 @@ Open **View as…** with that user and device: it shows the final result and, in
 - [x] Browser module: locked sidebar editing and redirection of hidden panels (0.3)
 - [x] **Kiosk mode editor** per user, profile, device and dashboard, and named **devices** (0.4)
 - [x] **View as…**, **import from Kiosk Mode** and **backup** (0.5)
+- [x] **1.0**: diagnostics, first stable release
 - [ ] Schedules: rules that only apply at certain times (e.g. *Kids* see Media from 17:00 to 20:00)
 - [ ] Optional best-effort blocking of hidden dashboards' configuration
 

@@ -292,6 +292,7 @@ Abrí **Ver como…** con ese usuario y dispositivo: muestra el resultado final 
 - [x] Módulo del navegador: bloqueo de la edición de la barra y redirección de paneles ocultos (0.3)
 - [x] **Editor de modo kiosk** por usuario, perfil, dispositivo y dashboard, y **dispositivos** con nombre (0.4)
 - [x] **Ver como…**, **importar desde Kiosk Mode** y **copia de seguridad** (0.5)
+- [x] **1.0**: diagnóstico, primera versión estable
 - [ ] Horarios: reglas que se aplican solo a ciertas horas (por ejemplo, *Chicos* ve Multimedia de 17 a 20 h)
 - [ ] Bloqueo opcional "best effort" de la configuración de los dashboards ocultos
 

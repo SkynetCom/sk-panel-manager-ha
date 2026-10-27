@@ -1,7 +1,7 @@
 // "View as…" tab, backup (export / import) and the Kiosk Mode importer of the SK Panel Manager panel.
-import { explainKiosk, resolveKioskFor } from "./skpm-resolver.js?v=0.5.0";
-import { applyKioskImport, convertKioskMode, makeBackup, readBackup } from "./skpm-import.js?v=0.5.0";
-import { KIOSK_GROUPS } from "./skpm-kiosk.js?v=0.5.0";
+import { explainKiosk, resolveKioskFor } from "./skpm-resolver.js?v=1.0.0";
+import { applyKioskImport, convertKioskMode, makeBackup, readBackup } from "./skpm-import.js?v=1.0.0";
+import { KIOSK_GROUPS } from "./skpm-kiosk.js?v=1.0.0";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const icon = (name) => `<ha-icon icon="${esc(name)}"></ha-icon>`;

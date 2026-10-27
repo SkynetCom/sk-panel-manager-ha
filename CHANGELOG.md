@@ -2,6 +2,13 @@
 
 🇬🇧 English · 🇪🇸 [Español](CHANGELOG.es.md)
 
+## 1.0.0 — 2026-10-27
+First stable release.
+- **Diagnostics:** *Settings → Devices & services → SK Panel Manager → ⋮ → Download diagnostics* now includes the rules and
+  their effect, with user names, ids and device names left out. Attach it when you report a problem.
+- A user with no stored sidebar and no rule to enforce is no longer written to: installing the integration doesn't touch
+  anyone's sidebar until a rule needs it.
+
 ## 0.5.0 — 2026-10-27
 - **View as…** (new tab): pick a user, a device and a dashboard and see their sidebar, the kiosk mock and where a hidden
   dashboard sends them, plus a **Why** table with the rule or layer behind every panel and kiosk option.
