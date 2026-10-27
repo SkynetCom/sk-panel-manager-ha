@@ -20,5 +20,5 @@
   "issue_tracker": "https://github.com/SkynetCom/sk-panel-manager-ha/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "0.4.0"
+  "version": "0.5.0"
 }

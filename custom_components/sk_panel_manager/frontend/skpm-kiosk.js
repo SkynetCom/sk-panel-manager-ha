@@ -1,6 +1,6 @@
 // Kiosk tab of the SK Panel Manager panel: layers (general, profiles, users, devices), per-dashboard
 // overrides, option groups and a mock of Home Assistant showing what gets hidden.
-import { resolveKioskFor, unmanagedReason } from "./skpm-resolver.js?v=0.4.0";
+import { resolveKioskFor, unmanagedReason } from "./skpm-resolver.js?v=0.5.0";
 
 export const KIOSK_GROUPS = {
   screen: [["kiosk", "mdi:monitor-lock"], ["hide_header", "mdi:page-layout-header"], ["hide_sidebar", "mdi:page-layout-sidebar-left"], ["hide_menubutton", "mdi:menu"]],
@@ -180,13 +180,19 @@ export const KioskMixin = (Base) => class extends Base {
   _kPreview(layer, scope) {
     const t = this.t;
     const o = this._kResult(layer, scope);
+    const dash = scope === "all" ? t("k_mock_dashboard") : this._ptitle(scope);
+    const kind = layer.key.split(":")[0];
+    const caption = kind === "user" || kind === "device" ? t("k_preview_combined") : t("k_preview_layer");
+    return this._kMock(o, dash, caption);
+  }
+
+  // Mock of Home Assistant with the given kiosk options (hidden parts outlined in red).
+  _kMock(o, dash, caption) {
+    const t = this.t;
     const full = !!o.kiosk;
     const off = (cond) => (cond ? "off" : "");
     const hideHeader = full || o.hide_header;
     const hideSidebar = full || o.hide_sidebar;
-    const dash = scope === "all" ? t("k_mock_dashboard") : this._ptitle(scope);
-    const kind = layer.key.split(":")[0];
-    const caption = kind === "user" || kind === "device" ? t("k_preview_combined") : t("k_preview_layer");
     return `<div class="card sb"><div class="muted small" style="padding:10px 16px 0;text-transform:uppercase;letter-spacing:.5px;font-weight:600">${esc(t("k_preview"))}</div>
       <div class="muted small" style="padding:2px 16px 10px">${esc(caption)}</div>
       <div class="mock ${o.block_mouse ? "nomouse" : ""}">

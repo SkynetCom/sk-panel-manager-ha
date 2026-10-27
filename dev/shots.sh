@@ -19,6 +19,8 @@ for lang in en es; do
   shot "user$sfx.png"     1440,1180 "dev/demo.html?shot=1&lang=$lang&tab=users&user=u_tomi"
   shot "profile$sfx.png"  1440,1100 "dev/demo.html?shot=1&lang=$lang&tab=profiles&profile=p_wall"
   shot "kiosk$sfx.png"    1440,1240 "dev/demo.html?shot=1&lang=$lang&tab=kiosk&layer=profile:p_kids&scope=dashboard-ninos"
+  shot "viewas$sfx.png"   1440,1180 "dev/demo.html?shot=1&lang=$lang&tab=viewas&vauser=u_tomi&vadevice=dev_tomi&vapanel=dashboard-camaras"
+  shot "import$sfx.png"   1440,1500 "dev/demo.html?shot=1&lang=$lang&tab=settings&kmscan=1"
   shot "settings$sfx.png" 1440,980  "dev/demo.html?shot=1&lang=$lang&tab=settings&dark=1"
   shot "mobile$sfx.png"   390,844   "dev/demo.html?shot=1&lang=$lang&tab=users&user=u_tablet"
   shot "flow$sfx.png"     1600,600  "docs/src/flow.html?lang=$lang"

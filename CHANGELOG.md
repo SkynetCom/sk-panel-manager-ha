@@ -2,6 +2,15 @@
 
 🇬🇧 English · 🇪🇸 [Español](CHANGELOG.es.md)
 
+## 0.5.0 — 2026-10-27
+- **View as…** (new tab): pick a user, a device and a dashboard and see their sidebar, the kiosk mock and where a hidden
+  dashboard sends them, plus a **Why** table with the rule or layer behind every panel and kiosk option.
+- **Import from Kiosk Mode** (Settings): reads the `kiosk_mode:` block of every dashboard and turns top-level,
+  `non_admin_settings` and `user_settings` options into kiosk settings (users matched by name). It lists what can't be
+  imported and why (`admin_settings`, `mobile_settings`, templates, options with no equivalent). Nothing is saved until you press Save.
+- **Backup** (Settings): export the configuration to a JSON file and import it here or into another Home Assistant;
+  users are matched by id, then by name, and the import lands as unsaved changes with a report.
+
 ## 0.4.0 — 2026-10-27
 - **Kiosk mode editor** (new *Kiosk* tab): full kiosk, hide header, sidebar and menu button; hide search, Assist, edit and ⋮
   in the header; hide Settings, Notifications and Profile in the sidebar; block entity dialogs or hide their ⚙ and ⋮;

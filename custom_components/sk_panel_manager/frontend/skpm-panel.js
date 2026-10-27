@@ -1,20 +1,22 @@
 // SK Panel Manager — admin panel.
 // Dependency-free web component: renders with template strings, uses event delegation
 // and pointer-based drag & drop (mouse + touch), like SK Irrigation Manager.
-import { translator } from "./skpm-i18n.js?v=0.4.0";
-import { STYLES } from "./skpm-styles.js?v=0.4.0";
-import { resolve } from "./skpm-resolver.js?v=0.4.0";
-import { KioskMixin } from "./skpm-kiosk.js?v=0.4.0";
+import { translator } from "./skpm-i18n.js?v=0.5.0";
+import { STYLES } from "./skpm-styles.js?v=0.5.0";
+import { resolve } from "./skpm-resolver.js?v=0.5.0";
+import { KioskMixin } from "./skpm-kiosk.js?v=0.5.0";
+import { ToolsMixin } from "./skpm-tools.js?v=0.5.0";
 
 const DOMAIN = "sk_panel_manager";
 // Version of this file; compared with the installed integration to spot a stale browser cache.
-export const PANEL_VERSION = "0.4.0";
+export const PANEL_VERSION = "0.5.0";
 const TABS = [
   ["overview", "mdi:view-dashboard-outline"],
   ["matrix", "mdi:table-check"],
   ["users", "mdi:account-multiple-outline"],
   ["profiles", "mdi:account-group-outline"],
   ["kiosk", "mdi:monitor-lock"],
+  ["viewas", "mdi:account-eye-outline"],
   ["settings", "mdi:cog-outline"],
 ];
 const KINDS = ["dashboard", "builtin", "integration", "addon"];
@@ -31,7 +33,7 @@ const colorFor = (id) => {
 };
 const icon = (name) => `<ha-icon icon="${esc(name)}"></ha-icon>`;
 
-class SkPanelManagerPanel extends KioskMixin(HTMLElement) {
+class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
   constructor() {
     super();
     this._tab = "overview";
@@ -598,6 +600,7 @@ class SkPanelManagerPanel extends KioskMixin(HTMLElement) {
         <li>${icon("mdi:check-circle")}<span>${esc(t("s_sec_1"))}</span></li>
         <li>${icon("mdi:check-circle")}<span>${esc(t("s_sec_2"))}</span></li>
         <li>${icon("mdi:alert-circle-outline")}<span>${esc(t("s_sec_3"))}</span></li></ul></div></div>
+      ${this._toolsCards()}
       <div class="muted small">SK Panel Manager · ${esc(t("version"))} ${esc(this._data.version)}</div>
     </div>`;
   }
@@ -688,7 +691,7 @@ class SkPanelManagerPanel extends KioskMixin(HTMLElement) {
       case "profile-color": this._draft.profiles[d.pid].color = d.color; break;
       case "toggle-setting": this._draft.settings[d.key] = !this._draft.settings[d.key]; break;
       default:
-        if (!this._kioskClick(a, d)) return;
+        if (!this._kioskClick(a, d) && !this._toolsClick(a, d)) return;
     }
     this._render();
   }
@@ -711,7 +714,7 @@ class SkPanelManagerPanel extends KioskMixin(HTMLElement) {
     if (d.change === "user-default") this._ucfg(d.uid).default_panel = v;
     else if (d.change === "profile-default") this._draft.profiles[d.pid].default_panel = v;
     else if (d.change === "setting-access") this._draft.settings.default_access = ev.target.value;
-    else if (!this._kioskChange(d, ev.target.value)) return;
+    else if (!this._kioskChange(d, ev.target.value) && !this._toolsChange(d, ev)) return;
     this._render();
   }
 

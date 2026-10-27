@@ -114,3 +114,33 @@ export function resolveKiosk(config, user, deviceId) {
   }
   return { default: def, dashboards };
 }
+
+// Which layer decided each kiosk option ("View as…"). Same order as resolveKioskFor; the result's
+// active options always match it (checked in tests).
+export function explainKiosk(config, user, deviceId, panel) {
+  const out = {};
+  const set = (opts, source) => { for (const [k, v] of Object.entries(opts)) out[k] = { value: v, source }; };
+  const layerOf = (kiosk) => layer(kiosk, panel).map((opts, i) => [opts, i === 0 ? "all" : "dashboard"]);
+  if (unmanagedReason(config, user) === null) {
+    for (const [opts, part] of layerOf(config.kiosk)) set(opts, { layer: "global", part });
+    const userCfg = config.users[user.id] || {};
+    const profiles = (userCfg.profiles || []).filter((p) => config.profiles[p]);
+    for (const part of [0, 1]) {
+      const onHere = new Set();  // options a profile turned on in this part
+      for (const pid of profiles) {
+        const l = layer(config.profiles[pid].kiosk, panel);
+        if (l.length <= part) continue;
+        for (const [k, v] of Object.entries(l[part])) {
+          // Profiles add up: once one turned an option on, another can't turn it off.
+          if (onHere.has(k) && !v) continue;
+          if (v) onHere.add(k);
+          out[k] = { value: v, source: { layer: "profile", id: pid, part: part ? "dashboard" : "all" } };
+        }
+      }
+    }
+    for (const [opts, part] of layerOf(userCfg.kiosk)) set(opts, { layer: "user", part });
+  }
+  const device = deviceId ? (config.devices || {})[deviceId] : null;
+  for (const [opts, part] of layerOf(device && device.kiosk)) set(opts, { layer: "device", id: deviceId, part });
+  return out;
+}

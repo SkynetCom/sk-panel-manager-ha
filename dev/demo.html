@@ -127,6 +127,15 @@ const hass = {
     await new Promise((r) => setTimeout(r, 250));
     if (msg.type === "sk_panel_manager/config") return payload();
     if (msg.type === "sk_panel_manager/config/save") { config = JSON.parse(JSON.stringify(msg.config)); return payload(); }
+    if (msg.type === "lovelace/dashboards/list") return catalog.filter((c) => c.kind === "dashboard" && c.url_path !== "lovelace").map((c) => ({ url_path: c.url_path, title: c.title, mode: "storage" }));
+    if (msg.type === "lovelace/config") {
+      // Example of an existing Kiosk Mode setup, for the importer.
+      if (msg.url_path === "dashboard-tablet") return { views: [], kiosk_mode: { kiosk: true, hide_dialog_header_action_items: true, hide_unused_entities: true, mobile_settings: { hide_header: true, custom_width: 812 } } };
+      if (msg.url_path === null) return { views: [], kiosk_mode: { non_admin_settings: { hide_search: true, hide_assistant: true },
+        admin_settings: { hide_header: false }, user_settings: [{ users: [L("Tomás", "Tomás"), "Pedro"], hide_header: true, block_overflow: true },
+          { users: L("Jardinero", "Gardener"), hide_sidebar: "{{ is_state('input_boolean.x', 'on') }}" }] } };
+      return { views: [] };
+    }
     if (msg.type === "sk_panel_manager/device/forget") { delete deviceStatus[msg.device_id]; delete config.devices[msg.device_id]; return payload(); }
     throw new Error(`Unknown command ${msg.type}`);
   },
@@ -144,8 +153,12 @@ if (q.get("user")) el._selUser = q.get("user");
 if (q.get("profile")) el._selProfile = q.get("profile");
 if (q.get("layer")) el._kSel = q.get("layer");
 if (q.get("scope")) el._kScope = q.get("scope");
+if (q.get("vauser")) el._vaUser = q.get("vauser");
+if (q.get("vadevice")) el._vaDevice = q.get("vadevice");
+if (q.get("vapanel")) el._vaPanel = q.get("vapanel");
 el.hass = hass;
 document.body.appendChild(el);
+if (q.get("kmscan")) setTimeout(() => el._scanKioskMode(), 300);
 </script>
 </body>
 </html>

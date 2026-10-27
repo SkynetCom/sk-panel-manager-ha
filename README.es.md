@@ -84,6 +84,26 @@ Ocultá el encabezado, la barra lateral, botones sueltos (búsqueda, Assist, edi
 </td>
 </tr>
 <tr>
+<td valign="top">
+
+### 🕵️ Ver como…
+Elegí un usuario, un dispositivo y un dashboard y mirá **exactamente qué le queda**: su barra lateral, la maqueta del kiosk, adónde lo manda un dashboard oculto, y una tabla **"Por qué"** con la regla o la capa detrás de cada panel y opción.
+
+</td>
+<td valign="top">
+
+### 🔁 ¿Venís de Kiosk Mode?
+Con un click lee el bloque `kiosk_mode:` de cada dashboard y lo convierte en ajustes de kiosk acá, con los usuarios buscados por nombre. Te muestra qué no se pudo importar y por qué. No cambia nada hasta que apretás **Guardar**.
+
+</td>
+<td valign="top">
+
+### 💾 Copia de seguridad
+**Exportá** toda la configuración a un archivo e **importala** después o en otro Home Assistant. Los usuarios se buscan por id y después por nombre. Lo importado queda como cambios sin guardar para revisar.
+
+</td>
+</tr>
+<tr>
 <td colspan="3" valign="top">
 
 ### 🧱 Construido sobre Home Assistant, no encima
@@ -136,6 +156,23 @@ La integración escribe la barra lateral y el dashboard por defecto de cada usua
 
 **Cómo salir:** un administrador puede apagar el kiosk en una pestaña agregando `?skpm_disable` a la dirección, y volver a prenderlo con `?skpm_enable`. Para cualquier otro usuario el parámetro no hace nada.
 
+## 🕵️ Ver como…
+
+<p align="center"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/viewas.es.png" alt="Ver como" width="100%"><br><sub><b>Ver como…</b> Tomás en su celular, abriendo <i>Cámaras</i>: para él está oculto, así que entra en <i>Chicos</i>. Cada panel y cada opción de kiosk muestra la regla o la capa que lo decidió.</sub></p>
+
+## 🔁 Importar desde Kiosk Mode
+
+<p align="center"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/import.es.png" alt="Importar desde Kiosk Mode y copia de seguridad" width="100%"><br><sub><b>Ajustes → Importar desde Kiosk Mode</b>: qué se agrega, qué no se importa y por qué, y los usuarios de Kiosk Mode que no existen acá.</sub></p>
+
+| Kiosk Mode | Se convierte en |
+|---|---|
+| Opciones al principio de `kiosk_mode:` y en `non_admin_settings` | Capa **General**, para ese dashboard |
+| `user_settings` (`users:` por nombre) | La capa de cada **usuario**, para ese dashboard |
+| `block_overflow` · `hide_dialog_header_settings` · `hide_dialog_header_overflow` · `hide_dialog_header_action_items` | Ocultar menú ⋮ · ocultar ⚙ del diálogo · ocultar ⋮ del diálogo · los dos |
+| `admin_settings`, `mobile_settings`, plantillas JavaScript/Jinja, opciones sin equivalente | Se listan como **no importadas**, con el motivo (en vez de `mobile_settings`, usá un dispositivo con nombre) |
+
+Después de importar, revisá el resultado en **Ver como…** y sacá el bloque `kiosk_mode:` de tus dashboards, así no se pisan las mismas opciones.
+
 ## 🆚 Comparado con las opciones habituales
 
 | | Home Assistant solo | Kiosk Mode | Custom Sidebar | **SK Panel Manager** |
@@ -151,6 +188,8 @@ La integración escribe la barra lateral y el dashboard por defecto de cada usua
 | Ocultar encabezado / modo kiosk | Parcial | ✅ | ❌ | ✅ |
 | Editor visual de kiosk con vista previa | — | ❌ | — | ✅ |
 | Kiosk por **dispositivo** (tablets con nombre) | — | Parcial | — | ✅ |
+| Ver cualquier usuario ("Ver como…") con el motivo de cada regla | ❌ | ❌ | ❌ | ✅ |
+| Copia de seguridad de las reglas | — | — | — | ✅ |
 
 Kiosk Mode y Custom Sidebar son muy buenos proyectos. Kiosk Mode todavía ofrece cosas que este no, como plantillas JavaScript/Jinja y algunas opciones extra de diálogos. SK Panel Manager es para administrar **quién ve qué** en toda una casa o empresa, de forma visual.
 
@@ -243,7 +282,7 @@ Iniciá sesión como administrador en ella y agregá `?skpm_disable` a la direcc
 
 <details><summary><b>Un usuario sigue viendo un panel que oculté</b></summary>
 
-Revisá la pestaña **Usuarios**: la vista previa muestra el resultado final y cada fila explica qué regla lo decidió. El dueño y (por defecto) los administradores nunca se gestionan. Si las reglas están bien, recargá el navegador de ese usuario.
+Abrí **Ver como…** con ese usuario y dispositivo: muestra el resultado final y, en *Por qué*, qué regla decidió cada panel y opción. El dueño y (por defecto) los administradores nunca se gestionan. Si las reglas están bien, recargá el navegador de ese usuario.
 </details>
 
 ## 🗺️ Hoja de ruta
@@ -252,9 +291,9 @@ Revisá la pestaña **Usuarios**: la vista previa muestra el resultado final y c
 - [x] Panel visual: resumen, matriz de acceso, usuarios, perfiles, ajustes (0.2)
 - [x] Módulo del navegador: bloqueo de la edición de la barra y redirección de paneles ocultos (0.3)
 - [x] **Editor de modo kiosk** por usuario, perfil, dispositivo y dashboard, y **dispositivos** con nombre (0.4)
-- [ ] **Ver como…**: ver cualquier usuario en cualquier dispositivo y por qué
-- [ ] **Importar desde Kiosk Mode**: convertir el YAML `kiosk_mode:` existente en reglas
-- [ ] Backup: exportar e importar la configuración
+- [x] **Ver como…**, **importar desde Kiosk Mode** y **copia de seguridad** (0.5)
+- [ ] Horarios: reglas que se aplican solo a ciertas horas (por ejemplo, *Chicos* ve Multimedia de 17 a 20 h)
+- [ ] Bloqueo opcional "best effort" de la configuración de los dashboards ocultos
 
 ## 🛠️ Desarrollo
 

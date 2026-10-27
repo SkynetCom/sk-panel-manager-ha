@@ -51,13 +51,19 @@ def test_js_matches_python(raw, tmp_path):
                        "kiosk_dev": resolver.resolve_kiosk(config, u, "tab1")} for u in USERS}
     script = tmp_path / "run.mjs"
     script.write_text(
-        f"import {{ resolve, resolveKiosk }} from {json.dumps(JS.as_uri())};\n"
+        f"import {{ resolve, resolveKiosk, resolveKioskFor, explainKiosk }} from {json.dumps(JS.as_uri())};\n"
         f"const config = {json.dumps(config)};\n"
         f"const catalog = {json.dumps([dataclasses.asdict(p) for p in CATALOG])};\n"
         f"const users = {json.dumps([dataclasses.asdict(u) for u in USERS])};\n"
         "const out = {}; for (const u of users) out[u.id] = {...resolve(config, u, catalog),"
         " kiosk: resolveKiosk(config, u, null), kiosk_dev: resolveKiosk(config, u, 'tab1')};\n"
+        "for (const u of users) for (const dev of [null, 'tab1']) for (const p of [null, 'kids', 'energy']) {\n"
+        "  const on = Object.entries(explainKiosk(config, u, dev, p)).filter(([, e]) => e.value).map(([k]) => k).sort();\n"
+        "  const want = Object.keys(resolveKioskFor(config, u, dev, p)).sort();\n"
+        "  if (JSON.stringify(on) !== JSON.stringify(want)) throw new Error(`explain mismatch ${u.id} ${dev} ${p}`);\n"
+        "}\n"
         "console.log(JSON.stringify(out));\n"
     )
-    result = subprocess.run(["node", str(script)], capture_output=True, text=True, check=True)
+    result = subprocess.run(["node", str(script)], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout) == expected

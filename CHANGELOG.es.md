@@ -2,6 +2,15 @@
 
 🇬🇧 [English](CHANGELOG.md) · 🇪🇸 Español
 
+## 0.5.0 — 2026-10-27
+- **Ver como…** (nueva pestaña): elegí un usuario, un dispositivo y un dashboard y mirá su barra lateral, la maqueta del
+  kiosk y adónde lo manda un dashboard oculto, más una tabla **Por qué** con la regla o la capa detrás de cada panel y opción.
+- **Importar desde Kiosk Mode** (Ajustes): lee el bloque `kiosk_mode:` de cada dashboard y convierte las opciones generales,
+  `non_admin_settings` y `user_settings` en ajustes de kiosk (usuarios buscados por nombre). Lista lo que no se puede importar
+  y por qué (`admin_settings`, `mobile_settings`, plantillas, opciones sin equivalente). No se guarda nada hasta que apretás Guardar.
+- **Copia de seguridad** (Ajustes): exportá la configuración a un archivo JSON e importala acá o en otro Home Assistant;
+  los usuarios se buscan por id y después por nombre, y lo importado queda como cambios sin guardar, con un informe.
+
 ## 0.4.0 — 2026-10-27
 - **Editor de modo kiosk** (nueva pestaña *Kiosk*): kiosk completo; ocultar encabezado, barra lateral y botón de menú;
   ocultar búsqueda, Assist, editar y ⋮ del encabezado; ocultar Configuración, Notificaciones y Perfil de la barra; bloquear

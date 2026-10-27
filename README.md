@@ -84,6 +84,26 @@ Hide the header, the sidebar, single buttons (search, Assist, edit, ⋮), sideba
 </td>
 </tr>
 <tr>
+<td valign="top">
+
+### 🕵️ View as…
+Pick a user, a device and a dashboard and see **exactly what they get**: their sidebar, the kiosk mock, where a hidden dashboard sends them, and a **"Why"** table with the rule or layer behind every panel and option.
+
+</td>
+<td valign="top">
+
+### 🔁 Coming from Kiosk Mode?
+One click reads the `kiosk_mode:` block of every dashboard and turns it into kiosk settings here, users matched by name. It lists what couldn't be imported and why. Nothing changes until you press **Save**.
+
+</td>
+<td valign="top">
+
+### 💾 Backup
+**Export** the whole configuration to a file and **import** it later or into another Home Assistant. Users are matched by id, then by name. The import lands as unsaved changes you can review.
+
+</td>
+</tr>
+<tr>
 <td colspan="3" valign="top">
 
 ### 🧱 Built on Home Assistant, not on top of it
@@ -136,6 +156,23 @@ The integration writes each user's sidebar and default dashboard to **Home Assis
 
 **Getting out:** an administrator can turn the kiosk off in one browser tab by adding `?skpm_disable` to the address, and back on with `?skpm_enable`. For anyone else the parameter does nothing.
 
+## 🕵️ View as…
+
+<p align="center"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/viewas.png" alt="View as" width="100%"><br><sub><b>View as…</b> Tomás on his phone, opening <i>Cameras</i>: it's hidden for him, so he lands on <i>Kids</i>. Every panel and kiosk option shows the rule or layer that decided it.</sub></p>
+
+## 🔁 Import from Kiosk Mode
+
+<p align="center"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/import.png" alt="Import from Kiosk Mode and backup" width="100%"><br><sub><b>Settings → Import from Kiosk Mode</b>: what will be added, what's skipped and why, and Kiosk Mode users that don't exist here.</sub></p>
+
+| Kiosk Mode | Becomes |
+|---|---|
+| Options at the top of `kiosk_mode:` and in `non_admin_settings` | **General** layer, for that dashboard |
+| `user_settings` (`users:` by name) | Each **user**'s layer, for that dashboard |
+| `block_overflow` · `hide_dialog_header_settings` · `hide_dialog_header_overflow` · `hide_dialog_header_action_items` | Hide ⋮ menu · hide dialog ⚙ · hide dialog ⋮ · both |
+| `admin_settings`, `mobile_settings`, JavaScript/Jinja templates, options with no equivalent | Listed as **not imported**, with the reason (use a named device instead of `mobile_settings`) |
+
+After importing, check the result in **View as…** and then remove the `kiosk_mode:` block from your dashboards, so the two don't fight over the same options.
+
 ## 🆚 Compared with the usual options
 
 | | Home Assistant alone | Kiosk Mode | Custom Sidebar | **SK Panel Manager** |
@@ -151,6 +188,8 @@ The integration writes each user's sidebar and default dashboard to **Home Assis
 | Hide header / kiosk mode | Partial | ✅ | ❌ | ✅ |
 | Visual kiosk editor with a live preview | — | ❌ | — | ✅ |
 | Kiosk per **device** (named wall tablets) | — | Partial | — | ✅ |
+| Preview any user ("View as…") with the reason for every rule | ❌ | ❌ | ❌ | ✅ |
+| Backup and restore of the rules | — | — | — | ✅ |
 
 Kiosk Mode and Custom Sidebar are great projects. Kiosk Mode still offers things this one doesn't, such as JavaScript/Jinja templates and a few extra dialog options. SK Panel Manager is for managing **who sees what** across a whole household or business, visually.
 
@@ -243,7 +282,7 @@ Sign in as an administrator on it and add `?skpm_disable` to the address (for ex
 
 <details><summary><b>A user still sees a panel I hid</b></summary>
 
-Check the **Users** tab: the preview shows the final result and each row explains which rule decided it. Owners and (by default) administrators are never managed. If the rules look right, reload that user's browser.
+Open **View as…** with that user and device: it shows the final result and, in *Why*, which rule decided each panel and option. Owners and (by default) administrators are never managed. If the rules look right, reload that user's browser.
 </details>
 
 ## 🗺️ Roadmap
@@ -252,9 +291,9 @@ Check the **Users** tab: the preview shows the final result and each row explain
 - [x] Visual admin panel: overview, access matrix, users, profiles, settings (0.2)
 - [x] Browser module: locked sidebar editing and redirection of hidden panels (0.3)
 - [x] **Kiosk mode editor** per user, profile, device and dashboard, and named **devices** (0.4)
-- [ ] **View as…**: preview any user on any device and see exactly why
-- [ ] **Import from Kiosk Mode**: turn existing `kiosk_mode:` YAML into rules
-- [ ] Backup: export and import the configuration
+- [x] **View as…**, **import from Kiosk Mode** and **backup** (0.5)
+- [ ] Schedules: rules that only apply at certain times (e.g. *Kids* see Media from 17:00 to 20:00)
+- [ ] Optional best-effort blocking of hidden dashboards' configuration
 
 ## 🛠️ Development
 
