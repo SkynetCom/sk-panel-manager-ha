@@ -1,15 +1,15 @@
 // SK Panel Manager — admin panel.
 // Dependency-free web component: renders with template strings, uses event delegation
 // and pointer-based drag & drop (mouse + touch), like SK Irrigation Manager.
-import { translator } from "./skpm-i18n.js?v=1.0.3";
-import { STYLES } from "./skpm-styles.js?v=1.0.3";
-import { resolve } from "./skpm-resolver.js?v=1.0.3";
-import { KioskMixin } from "./skpm-kiosk.js?v=1.0.3";
-import { ToolsMixin } from "./skpm-tools.js?v=1.0.3";
+import { translator } from "./skpm-i18n.js?v=1.0.4";
+import { STYLES } from "./skpm-styles.js?v=1.0.4";
+import { resolve } from "./skpm-resolver.js?v=1.0.4";
+import { KioskMixin } from "./skpm-kiosk.js?v=1.0.4";
+import { ToolsMixin } from "./skpm-tools.js?v=1.0.4";
 
 const DOMAIN = "sk_panel_manager";
 // Version of this file; compared with the installed integration to spot a stale browser cache.
-export const PANEL_VERSION = "1.0.3";
+export const PANEL_VERSION = "1.0.4";
 const TABS = [
   ["overview", "mdi:view-dashboard-outline"],
   ["matrix", "mdi:table-check"],

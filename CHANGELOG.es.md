@@ -2,6 +2,16 @@
 
 🇬🇧 [English](CHANGELOG.md) · 🇪🇸 Español
 
+## 1.0.4 — 2026-10-27
+- **Corregido para Home Assistant 2026.10:** la barra lateral cambió en 2026.10 y algunas opciones del kiosk dejaron de
+  funcionar ahí.
+  - *Ocultar barra lateral* dejaba una franja blanca vacía donde estaba la barra. El dashboard y su encabezado vuelven a
+    ocupar todo el ancho (como con *Kiosk completo*).
+  - *Ocultar Configuración*, *Ocultar Notificaciones* y *Ocultar perfil* no ocultaban esos ítems de la barra.
+  - En versiones anteriores las dos cosas siguen funcionando igual.
+- **Ocultar barra lateral también oculta el botón ☰ en el teléfono:** sin barra, el botón solo abría un menú vacío. La vista
+  previa del kiosk también lo muestra oculto.
+
 ## 1.0.3 — 2026-10-27
 - **Desplegables con el estilo del panel en todos lados:** los menús propios del navegador se reemplazan por un desplegable
   del panel (íconos, avatares de usuarios, tilde en la opción elegida, flechas del teclado, Escape y click afuera para

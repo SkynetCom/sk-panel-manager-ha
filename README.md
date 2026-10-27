@@ -298,6 +298,7 @@ Open **View as…** with that user and device: it shows the final result and, in
 - [x] **View as…**, **import from Kiosk Mode** and **backup** (0.5)
 - [x] **1.0**: diagnostics, first stable release
 - [x] **1.0.1–1.0.3**: setup that can't get stuck, security hardening, default dashboard with a tap, icon picker, styled drop-downs
+- [x] **1.0.4**: kiosk fixes for Home Assistant 2026.10 (hide sidebar, hide sidebar items, no ☰ on phones without a sidebar)
 - [ ] Schedules: rules that only apply at certain times (e.g. *Kids* see Media from 17:00 to 20:00)
 - [ ] Optional best-effort blocking of hidden dashboards' configuration
 

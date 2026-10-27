@@ -2,6 +2,15 @@
 
 🇬🇧 English · 🇪🇸 [Español](CHANGELOG.es.md)
 
+## 1.0.4 — 2026-10-27
+- **Fixed for Home Assistant 2026.10:** the sidebar was rebuilt in 2026.10 and some kiosk options stopped working there.
+  - *Hide sidebar* left an empty white strip where the sidebar used to be. The dashboard and its header now use the whole
+    width again (as with *Full kiosk*).
+  - *Hide Settings*, *Hide Notifications* and *Hide profile* didn't hide those sidebar items.
+  - Both work on older versions as before.
+- **Hide sidebar also hides the ☰ button on phones:** without a sidebar the button only opened an empty menu. The kiosk
+  preview shows it as hidden too.
+
 ## 1.0.3 — 2026-10-27
 - **Styled drop-downs everywhere:** the browser's own select menus are replaced by the panel's drop-down (icons, user
   avatars, a check on the current choice, keyboard arrows, Escape and click outside to close) in *View as…* and in the

@@ -298,6 +298,7 @@ Abrí **Ver como…** con ese usuario y dispositivo: muestra el resultado final 
 - [x] **Ver como…**, **importar desde Kiosk Mode** y **copia de seguridad** (0.5)
 - [x] **1.0**: diagnóstico, primera versión estable
 - [x] **1.0.1–1.0.3**: instalación que no se traba, refuerzos de seguridad, dashboard por defecto con un toque, selector de íconos, desplegables con estilo propio
+- [x] **1.0.4**: arreglos del kiosk para Home Assistant 2026.10 (ocultar barra lateral, ocultar ítems de la barra, sin ☰ en el teléfono cuando no hay barra)
 - [ ] Horarios: reglas que se aplican solo a ciertas horas (por ejemplo, *Chicos* ve Multimedia de 17 a 20 h)
 - [ ] Bloqueo opcional "best effort" de la configuración de los dashboards ocultos
 

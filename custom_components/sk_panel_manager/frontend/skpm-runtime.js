@@ -33,13 +33,20 @@
   };
   const SELECTORS = {
     main: {  // home-assistant-main shadow root
-      hide_sidebar: "ha-sidebar{display:none!important}ha-drawer{--mdc-drawer-width:0px!important}",
+      // --mdc-* up to HA 2026.9, --ha-* from 2026.10 (ha-drawer rewritten with a .sidebar-shell).
+      hide_sidebar: ":host{--ha-sidebar-width:0px!important;--ha-top-app-bar-width:100%!important;"
+        + "--mdc-drawer-width:0px!important;--mdc-top-app-bar-width:100%!important}"
+        + "ha-sidebar{display:none!important}ha-drawer{--mdc-drawer-width:0px!important}",
     },
-    sidebar: {  // ha-sidebar shadow root
+    drawer: {  // ha-drawer shadow root
+      hide_sidebar: ".sidebar-shell,.mdc-drawer{display:none!important}"
+        + ".app-content,.mdc-drawer-app-content{padding-inline-start:0!important;padding-left:0!important;margin-left:0!important}",
+    },
+    sidebar: {  // ha-sidebar shadow root (items are ha-md-list-item up to 2026.9, ha-list-item-button after)
       hide_menubutton: ".menu ha-icon-button{display:none!important}",
-      hide_settings: "ha-md-list-item.configuration{display:none!important}",
-      hide_notifications: "ha-md-list-item.notifications{display:none!important}",
-      hide_account: "ha-md-list-item.user{display:none!important}",
+      hide_settings: ":is(ha-md-list-item,ha-list-item-button).configuration{display:none!important}",
+      hide_notifications: ":is(ha-md-list-item,ha-list-item-button).notifications{display:none!important}",
+      hide_account: ":is(ha-md-list-item,ha-list-item-button).user{display:none!important}",
     },
     dashboard: {  // hui-root shadow root
       hide_header: ".header{display:none!important}#view,hui-view-container{padding-top:var(--safe-area-inset-top,0px)!important;min-height:100vh!important}",
@@ -187,12 +194,16 @@
       nativeKiosk = full;
       window.dispatchEvent(new CustomEvent("hass-kiosk-mode", { detail: { enable: full } }));
     }
-    const effective = full ? { ...opts, hide_header: true } : opts;
+    const effective = { ...opts };
+    if (full) effective.hide_header = true;
+    // Without a sidebar the ☰ button (shown on phones) would open an empty drawer.
+    if (opts.hide_sidebar) effective.hide_menubutton = true;
     styleIn(document.head, cssFor("document", effective));
     const ha = document.querySelector("home-assistant");
     const main = sr(sr(ha)?.querySelector("home-assistant-main"));
     if (!main) return;
     styleIn(main, cssFor("main", effective));
+    styleIn(sr(main.querySelector("ha-drawer")), cssFor("drawer", effective));
     styleIn(sr(main.querySelector("ha-sidebar")), cssFor("sidebar", effective));
     const lovelace = main.querySelector("partial-panel-resolver ha-panel-lovelace");
     const root = sr(sr(lovelace)?.querySelector("hui-root"));
