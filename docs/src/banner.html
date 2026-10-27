@@ -1,0 +1,36 @@
+<!doctype html>
+<!-- README banner. Rendered by dev/shots.sh after the screenshots (?lang=es for Spanish). -->
+<html><head><meta charset="utf-8"><style>
+  html,body{margin:0;width:1280px;height:640px;overflow:hidden;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif}
+  .bg{position:absolute;inset:0;background:radial-gradient(900px 600px at 88% 15%,#40aaf5 0%,transparent 60%),
+      radial-gradient(700px 520px at 0% 100%,#2e9e6b 0%,transparent 55%),linear-gradient(135deg,#141d4f,#26348f 55%,#3f51cd)}
+  .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
+        background-size:32px 32px;mask-image:linear-gradient(90deg,#000,transparent 65%)}
+  .left{position:absolute;left:68px;top:84px;width:560px;color:#fff}
+  .brand{display:flex;align-items:center;gap:22px}
+  .brand img{width:112px;height:112px;filter:drop-shadow(0 10px 24px rgba(0,0,0,.35))}
+  h1{margin:0;font-size:58px;line-height:1.02;letter-spacing:-1px}
+  h1 small{display:block;font-size:24px;font-weight:400;opacity:.8;letter-spacing:.5px;margin-top:6px}
+  p{font-size:24px;line-height:1.45;opacity:.93;margin:34px 0 28px}
+  .chips{display:flex;flex-wrap:wrap;gap:10px}
+  .chip{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.25);padding:9px 16px;border-radius:99px;font-size:17px;font-weight:500}
+  .shot{position:absolute;right:-150px;top:62px;width:800px;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.45);
+        transform:perspective(1600px) rotateY(-14deg) rotateX(4deg);border:1px solid rgba(255,255,255,.25)}
+  .shot2{position:absolute;right:300px;top:350px;width:210px;border-radius:22px;box-shadow:0 24px 60px rgba(0,0,0,.5);
+        transform:perspective(1600px) rotateY(-14deg) rotateX(4deg);border:6px solid #0d1330}
+</style></head><body>
+<div class="bg"></div><div class="grid"></div>
+<img class="shot" id="s1"><img class="shot2" id="s2">
+<div class="left">
+  <div class="brand"><img src="icon.png"><h1>SK Panel<small data-t="Manager for Home Assistant|Manager para Home Assistant"></small></h1></div>
+  <p data-t="Decide which panels and dashboards each user sees, from one visual admin panel. No YAML.|Decidí qué paneles y dashboards ve cada usuario, desde un panel visual. Sin YAML."></p>
+  <div class="chips"><span class="chip" data-t="🧮 Access matrix|🧮 Matriz de acceso"></span><span class="chip" data-t="👨‍👩‍👧 Profiles|👨‍👩‍👧 Perfiles"></span><span class="chip" data-t="🏠 Default dashboard|🏠 Dashboard por defecto"></span><span class="chip" data-t="🔒 Locked sidebar|🔒 Barra bloqueada"></span><span class="chip" data-t="👀 Live preview|👀 Vista previa"></span></div>
+</div>
+<script>
+  const es = new URLSearchParams(location.search).get("lang") === "es";
+  const sfx = es ? ".es" : "";
+  document.getElementById("s1").src = `../matrix${sfx}.png`;
+  document.getElementById("s2").src = `../mobile${sfx}.png`;
+  document.querySelectorAll("[data-t]").forEach((el) => { el.textContent = el.dataset.t.split("|")[es ? 1 : 0]; });
+</script>
+</body></html>

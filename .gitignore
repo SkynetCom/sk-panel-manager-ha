@@ -7,3 +7,4 @@ venv/
 .claude/
 .ha-dev/
 PLAN.md
+dev/_preview_*

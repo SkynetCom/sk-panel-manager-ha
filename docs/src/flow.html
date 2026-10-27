@@ -1,0 +1,89 @@
+<!doctype html>
+<!-- "How it works" diagram for the README. Rendered by dev/shots.sh (?lang=es for Spanish). -->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+<style>
+  html,body{margin:0;width:1600px;height:600px;overflow:hidden;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;background:#fff;color:#16213e}
+  .wrap{position:absolute;inset:0;display:grid;grid-template-columns:400px 90px 360px 90px 1fr;align-items:center;padding:0 44px}
+  h4{margin:0 0 14px;font-size:15px;letter-spacing:1.4px;text-transform:uppercase;color:#7b869a}
+  .col{display:flex;flex-direction:column;gap:12px}
+  .rule{display:flex;align-items:center;gap:14px;background:#f6f8fc;border:1px solid #e3e8f2;border-radius:16px;padding:14px 16px}
+  .ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;color:#fff;font-size:26px;flex:none}
+  .rule b{font-size:19px;display:block}
+  .rule .sub{font-size:14px;color:#66727f;display:block}
+  .dots{display:flex;gap:5px;margin-top:6px}
+  .d{width:16px;height:16px;border-radius:5px;display:grid;place-items:center;font-size:11px;color:#fff}
+  .ok{background:#2e9e6b}.no{background:#e5533d}
+  .arrow{font-size:54px;color:#c3cbe0;text-align:center}
+  .core{background:linear-gradient(150deg,#40aaf5,#3f51cd);border-radius:26px;padding:30px 26px;color:#fff;text-align:center;box-shadow:0 24px 60px rgba(63,81,205,.35)}
+  .core img{width:96px;height:96px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.25))}
+  .core h3{margin:14px 0 6px;font-size:28px}
+  .core p{margin:0;font-size:16px;line-height:1.45;opacity:.92}
+  .core .tags{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:18px}
+  .core .tags span{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:6px 12px;font-size:13px}
+  .bars{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .sb{border:1px solid #e3e8f2;border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(22,33,62,.08);background:#fff}
+  .sb .h{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #eef1f6}
+  .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px}
+  .sb .h b{font-size:16px}
+  .sb .h small{display:block;font-size:12px;color:#7b869a}
+  .it{display:flex;align-items:center;gap:12px;padding:9px 14px;font-size:15px}
+  .it i{font-size:21px;color:#66727f}
+  .it.def{background:#eef1fd;font-weight:600}
+  .it.def i{color:#3f51cd}
+  .it em{margin-left:auto;font-style:normal;font-size:10px;color:#3f51cd;font-weight:700;text-transform:uppercase}
+  .sep{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#9aa4b5;padding:10px 14px 2px;border-top:1px solid #eef1f6;margin-top:4px}
+  .hid{opacity:.4;text-decoration:line-through}
+</style></head><body>
+<div class="wrap">
+  <div class="col">
+    <h4 data-t="Rules|Reglas"></h4>
+    <div class="rule"><span class="ic" style="background:#2e9e6b"><i class="mdi mdi-human-child"></i></span><div><b data-t="Kids|Chicos"></b><span class="sub" data-t="Profile · 2 members|Perfil · 2 miembros"></span>
+      <div class="dots"><span class="d ok"><i class="mdi mdi-eye"></i></span><span class="d ok"><i class="mdi mdi-eye"></i></span><span class="d no"><i class="mdi mdi-eye-off"></i></span><span class="d no"><i class="mdi mdi-eye-off"></i></span><span class="d no"><i class="mdi mdi-eye-off"></i></span></div></div></div>
+    <div class="rule"><span class="ic" style="background:#3f51cd"><i class="mdi mdi-tablet-dashboard"></i></span><div><b data-t="Wall tablet|Tablet de pared"></b><span class="sub" data-t="Profile · 1 member|Perfil · 1 miembro"></span>
+      <div class="dots"><span class="d ok"><i class="mdi mdi-eye"></i></span><span class="d no"><i class="mdi mdi-eye-off"></i></span><span class="d no"><i class="mdi mdi-eye-off"></i></span><span class="d no"><i class="mdi mdi-eye-off"></i></span><span class="d ok"><i class="mdi mdi-eye"></i></span></div></div></div>
+    <div class="rule"><span class="ic" style="background:#f2a900"><i class="mdi mdi-account-clock"></i></span><div><b data-t="Guests + Irrigation|Invitados + Riego"></b><span class="sub" data-t="Profile + rule on the user|Perfil + regla en el usuario"></span>
+      <div class="dots"><span class="d ok"><i class="mdi mdi-eye"></i></span><span class="d no"><i class="mdi mdi-eye-off"></i></span><span class="d no"><i class="mdi mdi-eye-off"></i></span><span class="d no"><i class="mdi mdi-eye-off"></i></span><span class="d ok"><i class="mdi mdi-eye"></i></span></div></div></div>
+  </div>
+  <div class="arrow"><i class="mdi mdi-arrow-right-thick"></i></div>
+  <div class="core">
+    <img src="icon.png">
+    <h3>SK Panel Manager</h3>
+    <p data-t="Writes each user's sidebar and default dashboard in Home Assistant's own storage, and keeps them that way.|Escribe la barra lateral y el dashboard por defecto de cada usuario en el almacenamiento propio de Home Assistant, y los mantiene así."></p>
+    <div class="tags"><span data-t="Live updates|En vivo"></span><span data-t="Editing locked|Edición bloqueada"></span><span data-t="Hidden URLs redirected|URLs ocultas redirigidas"></span></div>
+  </div>
+  <div class="arrow"><i class="mdi mdi-arrow-right-thick"></i></div>
+  <div class="col"><h4 data-t="What each user sees|Lo que ve cada usuario"></h4>
+    <div class="bars">
+      <div class="sb"><div class="h"><span class="av" style="background:#2e9e6b">T</span><div><b>Tomás</b><small data-t="Kids|Chicos"></small></div></div>
+        <div class="it def"><i class="mdi mdi-teddy-bear"></i><span data-t="Kids|Chicos"></span><em data-t="Home|Inicio"></em></div>
+        <div class="it"><i class="mdi mdi-play-box-multiple"></i><span data-t="Media|Multimedia"></span></div>
+        <div class="it"><i class="mdi mdi-view-dashboard"></i><span data-t="Overview|Resumen"></span></div>
+        <div class="sep" data-t="Hidden|Ocultos"></div>
+        <div class="it hid"><i class="mdi mdi-cctv"></i><span data-t="Cameras|Cámaras"></span></div>
+        <div class="it hid"><i class="mdi mdi-lightning-bolt"></i><span data-t="Energy|Energía"></span></div>
+        <div class="it hid"><i class="mdi mdi-sprinkler-variant"></i><span data-t="Irrigation|Riego"></span></div></div>
+      <div class="sb"><div class="h"><span class="av" style="background:#7cb342">KT</span><div><b data-t="Kitchen tablet|Tablet cocina"></b><small data-t="Wall tablet|Tablet de pared"></small></div></div>
+        <div class="it def"><i class="mdi mdi-tablet"></i><span data-t="Kitchen|Cocina"></span><em data-t="Home|Inicio"></em></div>
+        <div class="it"><i class="mdi mdi-clipboard-list"></i><span data-t="To-do lists|Listas"></span></div>
+        <div class="sep" data-t="Hidden|Ocultos"></div>
+        <div class="it hid"><i class="mdi mdi-view-dashboard"></i><span data-t="Overview|Resumen"></span></div>
+        <div class="it hid"><i class="mdi mdi-cctv"></i><span data-t="Cameras|Cámaras"></span></div>
+        <div class="it hid"><i class="mdi mdi-lightning-bolt"></i><span data-t="Energy|Energía"></span></div>
+        <div class="it hid"><i class="mdi mdi-chart-box"></i><span data-t="History|Historial"></span></div></div>
+      <div class="sb"><div class="h"><span class="av" style="background:#7cb342">G</span><div><b data-t="Gardener|Jardinero"></b><small data-t="Guests|Invitados"></small></div></div>
+        <div class="it def"><i class="mdi mdi-sprinkler-variant"></i><span data-t="Irrigation|Riego"></span><em data-t="Home|Inicio"></em></div>
+        <div class="it"><i class="mdi mdi-play-box-multiple"></i><span data-t="Media|Multimedia"></span></div>
+        <div class="sep" data-t="Hidden|Ocultos"></div>
+        <div class="it hid"><i class="mdi mdi-view-dashboard"></i><span data-t="Overview|Resumen"></span></div>
+        <div class="it hid"><i class="mdi mdi-cctv"></i><span data-t="Cameras|Cámaras"></span></div>
+        <div class="it hid"><i class="mdi mdi-lightning-bolt"></i><span data-t="Energy|Energía"></span></div>
+        <div class="it hid"><i class="mdi mdi-chart-box"></i><span data-t="History|Historial"></span></div></div>
+    </div>
+  </div>
+</div>
+<script>
+  const es = new URLSearchParams(location.search).get("lang") === "es";
+  document.querySelectorAll("[data-t]").forEach((el) => { el.textContent = el.dataset.t.split("|")[es ? 1 : 0]; });
+</script>
+</body></html>

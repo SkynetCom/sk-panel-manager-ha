@@ -119,13 +119,18 @@ const hass = {
   },
 };
 
+// URL options for screenshots: ?tab=matrix&user=u_tomi&profile=p_kids&dark=1&shot=1&lang=en
+const q = new URLSearchParams(location.search);
+if (q.get("dark")) document.body.classList.add("dark");
+if (q.get("shot")) document.getElementById("ctl").remove();
 const el = document.createElement("sk-panel-manager-panel");
 el.panel = { config: { version: PANEL_VERSION } };
 el.narrow = window.innerWidth < 870;
+if (q.get("tab")) el._tab = q.get("tab");
+if (q.get("user")) el._selUser = q.get("user");
+if (q.get("profile")) el._selProfile = q.get("profile");
 el.hass = hass;
 document.body.appendChild(el);
-const tab = new URLSearchParams(location.search).get("tab");
-if (tab) setTimeout(() => el.shadowRoot.querySelector(`[data-tab="${tab}"]`)?.click(), 400);
 </script>
 </body>
 </html>
