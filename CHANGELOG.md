@@ -2,6 +2,15 @@
 
 🇬🇧 English · 🇪🇸 [Español](CHANGELOG.es.md)
 
+## 1.0.2 — 2026-10-27
+- **Default dashboard with one tap:** the drop-down is gone. In the *Order and default* card of users and profiles, tap the
+  house next to a dashboard to make it the one the user starts on; tap it again to go back to the inherited one. A faded
+  house shows a default inherited from a profile, and a line above the list says where the user starts.
+- **Icon picker for profiles:** a button opens a searchable grid with Home Assistant's own icon list (about 7,000 icons,
+  searched by name and keywords, best matches first) and suggested icons before you type. No more typing `mdi:` names.
+- **Fixed:** in the profile editor, the order list and its controls could overflow their card on some screen widths.
+  The order column is wider and nothing in a column can push it wider any more.
+
 ## 1.0.1 — 2026-10-27
 - **Adding the integration can't get stuck anymore:** setup no longer waits until the rules are applied to every user (that
   now happens right after, in the background). A slow or unusual installation could leave the *Add integration* dialog

@@ -1,6 +1,6 @@
 // Kiosk tab of the SK Panel Manager panel: layers (general, profiles, users, devices), per-dashboard
 // overrides, option groups and a mock of Home Assistant showing what gets hidden.
-import { resolveKioskFor, unmanagedReason } from "./skpm-resolver.js?v=1.0.1";
+import { resolveKioskFor, unmanagedReason } from "./skpm-resolver.js?v=1.0.2";
 
 export const KIOSK_GROUPS = {
   screen: [["kiosk", "mdi:monitor-lock"], ["hide_header", "mdi:page-layout-header"], ["hide_sidebar", "mdi:page-layout-sidebar-left"], ["hide_menubutton", "mdi:menu"]],

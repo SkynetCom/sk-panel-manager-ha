@@ -1,15 +1,15 @@
 // SK Panel Manager — admin panel.
 // Dependency-free web component: renders with template strings, uses event delegation
 // and pointer-based drag & drop (mouse + touch), like SK Irrigation Manager.
-import { translator } from "./skpm-i18n.js?v=1.0.1";
-import { STYLES } from "./skpm-styles.js?v=1.0.1";
-import { resolve } from "./skpm-resolver.js?v=1.0.1";
-import { KioskMixin } from "./skpm-kiosk.js?v=1.0.1";
-import { ToolsMixin } from "./skpm-tools.js?v=1.0.1";
+import { translator } from "./skpm-i18n.js?v=1.0.2";
+import { STYLES } from "./skpm-styles.js?v=1.0.2";
+import { resolve } from "./skpm-resolver.js?v=1.0.2";
+import { KioskMixin } from "./skpm-kiosk.js?v=1.0.2";
+import { ToolsMixin } from "./skpm-tools.js?v=1.0.2";
 
 const DOMAIN = "sk_panel_manager";
 // Version of this file; compared with the installed integration to spot a stale browser cache.
-export const PANEL_VERSION = "1.0.1";
+export const PANEL_VERSION = "1.0.2";
 const TABS = [
   ["overview", "mdi:view-dashboard-outline"],
   ["matrix", "mdi:table-check"],
@@ -34,6 +34,14 @@ const colorFor = (id) => {
   return PALETTE[h % PALETTE.length];
 };
 const icon = (name) => `<ha-icon icon="${esc(name)}"></ha-icon>`;
+// Shown before searching (and the whole list if Home Assistant's icon index can't be loaded).
+const SUGGESTED_ICONS = ["account-group", "account-child", "human-child", "human-male-female-child", "baby-face",
+  "account-clock", "account-tie", "account-hard-hat", "account-wrench", "account-lock", "shield-account", "crown",
+  "home", "home-heart", "home-account", "bed", "sofa", "chef-hat", "tablet", "tablet-dashboard", "monitor-dashboard",
+  "television", "cellphone", "gamepad-variant", "music", "school", "briefcase", "tools", "wrench", "broom",
+  "sprinkler-variant", "flower", "leaf", "dog", "cat", "car", "garage", "cctv", "lock", "key", "lightbulb",
+  "flash", "solar-power", "security", "star", "heart", "eye", "eye-off"];
+const ICON_LIMIT = 120;
 
 class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
   constructor() {
@@ -457,16 +465,15 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
         <button class="btn ghost small" data-action="user-all" data-uid="${esc(u.id)}" data-value="inherit">${esc(t("all_inherit"))}</button>
       </div><div class="body" style="padding-top:6px;padding-bottom:6px">${rows}</div></div>`;
 
-    const defOptions = [`<option value="">${esc(t("inherit_default"))}</option>`,
-      ...e.allowed.map((p) => `<option value="${esc(p)}" ${cfg?.default_panel === p ? "selected" : ""}>${esc(this._ptitle(p))}</option>`)].join("");
+    const ownDefault = cfg?.default_panel || null;
     const ownOrder = cfg?.panel_order != null;
     const orderCard = `<div class="card"><div class="head">${icon("mdi:sort")}<h2>${esc(t("order"))}</h2>
         <span class="badge">${esc(ownOrder ? t("order_own") : e.order ? t("order_inherited") : t("order_user"))}</span></div>
       <div class="body grid">
-        <label class="field">${esc(t("default_dashboard"))}<select data-change="user-default" data-uid="${esc(u.id)}">${defOptions}</select></label>
+        ${this._defaultLine(ownDefault, ownDefault ? null : e.default_panel)}
         <div><div class="row" style="margin-bottom:8px"><span class="muted small">${esc(t("order_hint"))}</span><span class="spacer"></span>
           ${ownOrder ? `<button class="btn ghost small" data-action="user-order-reset" data-uid="${esc(u.id)}">${icon("mdi:restore")}${esc(t("order_reset"))}</button>` : ""}</div>
-          ${this._sortable(`user:${u.id}`, this._orderedAllowed(e))}</div>
+          ${this._sortable(`user:${u.id}`, this._orderedAllowed(e), { own: ownDefault, inherited: ownDefault ? null : e.default_panel })}</div>
       </div></div>`;
 
     return `<div class="grid">${head}<div class="detail"><div class="grid">${profileCard}${panelsCard}${orderCard}</div>${this._sidebarPreview(u, e)}</div></div>`;
@@ -477,13 +484,31 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
     return [...order, ...e.shown.filter((p) => !order.includes(p))];
   }
 
-  _sortable(key, ids) {
+  // Which dashboard the user / profile starts on, above the list (the list's house buttons change it).
+  _defaultLine(own, inherited) {
+    const t = this.t;
+    const text = own ? t("default_set", { d: this._ptitle(own) })
+      : inherited ? t("default_inherited", { d: this._ptitle(inherited) }) : t("default_none");
+    return `<div class="defline ${own ? "own" : ""}">${icon(own ? "mdi:home" : "mdi:home-outline")}<span>${esc(text)}</span></div>`;
+  }
+
+  // defaults: { own, inherited } — draws the house button that picks the default dashboard.
+  _sortable(key, ids, defaults = null) {
+    const t = this.t;
     const dropped = this._dropped;
     this._dropped = null;
-    return `<div class="sort" data-sort="${esc(key)}" role="list">${ids.map((id, i) => `<div class="si ${dropped === id ? "dropped" : ""}" data-id="${esc(id)}"
+    const house = (id) => {
+      if (!defaults) return "";
+      const own = defaults.own === id;
+      const inh = !defaults.own && defaults.inherited === id;
+      const label = own ? t("default_unset") : t("default_pick", { d: this._ptitle(id) });
+      return `<button class="home ${own ? "on" : ""} ${inh ? "inh" : ""}" data-action="set-default" data-key="${esc(key)}" data-id="${esc(id)}"
+        title="${esc(label)}" aria-label="${esc(label)}" aria-pressed="${own}">${icon(own || inh ? "mdi:home" : "mdi:home-outline")}</button>`;
+    };
+    return `<div class="sort" data-sort="${esc(key)}" role="list">${ids.map((id, i) => `<div class="si ${dropped === id ? "dropped" : ""} ${defaults && defaults.own === id ? "def" : ""}" data-id="${esc(id)}"
       role="listitem" tabindex="0" aria-label="${esc(`${i + 1}. ${this._ptitle(id)}`)}">
       <span class="grip" aria-hidden="true">${icon("mdi:drag-vertical")}</span><span class="pos">${i + 1}</span>
-      <span class="pic">${icon(this._picon(id))}</span><span class="pname">${esc(this._ptitle(id))}</span>
+      <span class="pic">${icon(this._picon(id))}</span><span class="pname">${esc(this._ptitle(id))}</span>${house(id)}
       <span class="keys"><button class="btn ghost mini" data-action="move" data-dir="-1" tabindex="-1" aria-label="Up" ${i === 0 ? "disabled" : ""}>${icon("mdi:chevron-up")}</button>
       <button class="btn ghost mini" data-action="move" data-dir="1" tabindex="-1" aria-label="Down" ${i === ids.length - 1 ? "disabled" : ""}>${icon("mdi:chevron-down")}</button></span></div>`).join("")}</div>`;
   }
@@ -562,8 +587,6 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
       .filter((c) => p.panels[c.url_path] === "allow" || (c.default_visible && p.panels[c.url_path] !== "deny"))
       .map((c) => c.url_path);
     const order = [...(p.panel_order || []).filter((id) => allowed.includes(id)), ...allowed.filter((id) => !(p.panel_order || []).includes(id))];
-    const defOptions = [`<option value="">${esc(t("inherit_default"))}</option>`,
-      ...allowed.map((id) => `<option value="${esc(id)}" ${p.default_panel === id ? "selected" : ""}>${esc(this._ptitle(id))}</option>`)].join("");
 
     return `<div class="grid">
       <div class="card"><div class="dhead"><span class="icon-box" style="--c:${color};width:56px;height:56px;border-radius:16px">${icon(p.icon)}</span>
@@ -571,18 +594,21 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
         <button class="btn danger" data-action="delete-profile" data-pid="${esc(pid)}">${icon("mdi:delete-outline")}${esc(t("delete_profile"))}</button></div>
         <div class="body form2" style="border-top:1px solid var(--pm-line)">
           <label class="field">${esc(t("profile_name"))}<input type="text" maxlength="60" data-focus="pname" data-input="profile-name" data-pid="${esc(pid)}" value="${esc(p.name)}"></label>
-          <label class="field">${esc(t("profile_icon"))}<input type="text" data-focus="picon" data-input="profile-icon" data-pid="${esc(pid)}" value="${esc(p.icon)}" placeholder="mdi:account-group"></label>
+          <div class="field iconfield"><span>${esc(t("profile_icon"))}</span>
+            <button class="iconbtn" data-action="icon-open" data-pid="${esc(pid)}" aria-haspopup="dialog" aria-expanded="${this._iconPicker === pid}">
+              ${icon(p.icon)}<span>${esc(p.icon.replace("mdi:", ""))}</span>${icon("mdi:chevron-down")}</button>
+            ${this._iconPicker === pid ? this._iconPop(pid, p.icon) : ""}</div>
           <div class="field" style="grid-column:1/-1"><span class="small muted">${esc(t("profile_color"))}</span>
             <div class="palette">${PALETTE.map((c) => `<button style="--c:${c}" class="${c === color ? "on" : ""}" data-action="profile-color" data-pid="${esc(pid)}" data-color="${c}" aria-label="${c}"></button>`).join("")}</div></div>
         </div></div>
       <div class="card"><div class="head">${icon("mdi:account-multiple")}<h2>${esc(t("members"))}</h2></div><div class="body"><div class="chips">${members}</div></div></div>
-      <div class="detail"><div class="card"><div class="head">${icon("mdi:view-grid-outline")}<h2>${esc(t("panels"))}</h2></div>
+      <div class="detail kdetail"><div class="card"><div class="head">${icon("mdi:view-grid-outline")}<h2>${esc(t("panels"))}</h2></div>
         <div class="body" style="padding-top:6px;padding-bottom:6px">${rows}</div></div>
         <div class="card"><div class="head">${icon("mdi:sort")}<h2>${esc(t("order"))}</h2></div><div class="body grid">
-          <label class="field">${esc(t("default_dashboard"))}<select data-change="profile-default" data-pid="${esc(pid)}">${defOptions}</select></label>
+          ${this._defaultLine(p.default_panel, null)}
           <div><div class="row" style="margin-bottom:8px"><span class="muted small">${esc(t("order_hint"))}</span><span class="spacer"></span>
             ${p.panel_order ? `<button class="btn ghost small" data-action="profile-order-reset" data-pid="${esc(pid)}">${icon("mdi:restore")}</button>` : ""}</div>
-          ${this._sortable(`profile:${pid}`, order)}</div></div></div></div>
+          ${this._sortable(`profile:${pid}`, order, { own: p.default_panel, inherited: null })}</div></div></div></div>
     </div>`;
   }
 
@@ -611,8 +637,55 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
     </div>`;
   }
 
+  // ------------------------------------------------------------------ icon picker
+  _iconPop(pid, current) {
+    const t = this.t;
+    const q = (this._iconQuery || "").trim().toLowerCase();
+    let names;
+    let caption;
+    if (!q) {
+      names = SUGGESTED_ICONS;
+      caption = t("icon_suggested");
+    } else {
+      const list = this._icons || SUGGESTED_ICONS.map((name) => ({ name, keywords: [] }));
+      const terms = q.replace(/^mdi:/, "").split(/\s+/);
+      const hits = list.filter((i) => terms.every((term) => i.name.includes(term) || (i.keywords || []).some((k) => k.includes(term))));
+      // Best matches first: exact name, name starting with the search, name containing it, then keywords.
+      const rank = (n) => (n === terms[0] ? 0 : n.startsWith(terms[0]) ? 1 : n.includes(terms[0]) ? 2 : 3);
+      hits.sort((a, b) => rank(a.name) - rank(b.name) || a.name.length - b.name.length);
+      names = hits.slice(0, ICON_LIMIT).map((i) => i.name);
+      caption = hits.length > ICON_LIMIT ? t("icon_more", { n: ICON_LIMIT, t: hits.length }) : t("icon_results", { n: hits.length });
+    }
+    const cur = current.replace("mdi:", "");
+    return `<div class="iconpop" role="dialog" aria-label="${esc(t("profile_icon"))}">
+      <input type="search" data-focus="iconsearch" data-input="icon-search" value="${esc(this._iconQuery || "")}" placeholder="${esc(t("icon_search"))}">
+      <div class="muted small">${esc(this._icons === undefined && q ? t("icon_loading") : caption)}</div>
+      <div class="icongrid">${names.map((n) => `<button class="${n === cur ? "on" : ""}" data-action="pick-icon" data-pid="${esc(pid)}"
+        data-icon="mdi:${esc(n)}" title="${esc(n)}" aria-label="${esc(n)}">${icon(`mdi:${n}`)}</button>`).join("") || `<span class="muted small">${esc(t("icon_none"))}</span>`}</div>
+    </div>`;
+  }
+
+  // Home Assistant serves its icon index (names + keywords) for its own icon picker.
+  async _loadIcons() {
+    if (this._icons !== undefined) return;
+    this._icons = null;
+    try {
+      const res = await fetch("/static/mdi/iconList.json");
+      if (!res.ok) throw new Error(res.status);
+      const list = await res.json();
+      this._icons = Array.isArray(list) ? list.filter((i) => i && typeof i.name === "string") : [];
+    } catch (_) {
+      this._icons = SUGGESTED_ICONS.map((name) => ({ name, keywords: [] }));
+    }
+    if (this._iconPicker) this._render();
+  }
+
   // ------------------------------------------------------------------ events
   _onClick(ev) {
+    if (this._iconPicker && !ev.target.closest(".iconfield")) {
+      this._iconPicker = null;
+      this._render();
+    }
     const tab = ev.target.closest("[data-tab]");
     if (tab) {
       this._tab = tab.dataset.tab;
@@ -695,6 +768,25 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
         break;
       }
       case "profile-color": this._draft.profiles[d.pid].color = d.color; break;
+      case "set-default": {
+        // Tap the house of a dashboard to start there; tap it again to go back to inherited / unchanged.
+        const [kind, id] = d.key.split(/:(.*)/s);
+        const target = kind === "user" ? this._ucfg(id) : this._draft.profiles[id];
+        target.default_panel = target.default_panel === d.id ? null : d.id;
+        break;
+      }
+      case "icon-open": {
+        this._iconPicker = this._iconPicker === d.pid ? null : d.pid;
+        this._iconQuery = "";
+        this._loadIcons();
+        this._render();
+        this.shadowRoot.querySelector('[data-focus="iconsearch"]')?.focus();
+        return;
+      }
+      case "pick-icon":
+        this._draft.profiles[d.pid].icon = d.icon;
+        this._iconPicker = null;
+        break;
       case "toggle-setting": this._draft.settings[d.key] = !this._draft.settings[d.key]; break;
       default:
         if (!this._kioskClick(a, d) && !this._toolsClick(a, d)) return;
@@ -706,11 +798,8 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
     const d = ev.target.dataset;
     if (d.input === "search") this._search = ev.target.value;
     else if (d.input === "profile-name") this._draft.profiles[d.pid].name = ev.target.value;
-    else if (d.input === "profile-icon") {
-      const v = ev.target.value.trim();
-      if (!/^mdi:[a-z0-9-]+$/.test(v)) return;
-      this._draft.profiles[d.pid].icon = v;
-    } else if (!this._kioskInput(d, ev.target.value)) return;
+    else if (d.input === "icon-search") this._iconQuery = ev.target.value;
+    else if (!this._kioskInput(d, ev.target.value)) return;
     this._render();
   }
 
@@ -809,6 +898,11 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
   }
 
   _onKeyDown(ev) {
+    if (ev.key === "Escape" && this._iconPicker) {
+      this._iconPicker = null;
+      this._render();
+      return;
+    }
     const item = ev.target.closest?.(".sort .si");
     if (!item || ev.target !== item) return;
     if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {

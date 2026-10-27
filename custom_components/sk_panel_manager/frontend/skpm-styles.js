@@ -202,6 +202,17 @@ table.matrix { border-collapse: separate; border-spacing: 0; min-width: 100%; }
 .sort .si .pic { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: var(--pm-soft); flex: none; }
 .sort .si .pic ha-icon { --mdc-icon-size: 18px; color: var(--pm-muted); }
 .sort .si .pname { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sort .si .home { border: 0; background: none; padding: 5px; border-radius: 8px; display: grid; flex: none; cursor: pointer; }
+.sort .si .home ha-icon { --mdc-icon-size: 20px; color: var(--pm-muted); opacity: .55; }
+.sort .si .home:hover ha-icon { opacity: 1; color: var(--pm-primary); }
+.sort .si .home.inh ha-icon { color: var(--pm-primary); opacity: .45; }
+.sort .si .home.on { background: var(--pm-primary); }
+.sort .si .home.on ha-icon { color: #fff; opacity: 1; }
+.sort .si.def { border-color: var(--pm-primary); background: color-mix(in srgb, var(--pm-primary) 6%, var(--pm-card)); }
+.defline { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 10px; background: var(--pm-bg); font-size: 13px; color: var(--pm-muted); }
+.defline ha-icon { --mdc-icon-size: 20px; color: var(--pm-muted); }
+.defline.own { color: var(--pm-text); font-weight: 500; }
+.defline.own ha-icon { color: var(--pm-primary); }
 .sort .si .keys { display: flex; opacity: 0; transition: opacity .15s; }
 .sort .si:hover .keys, .sort .si:focus-within .keys { opacity: 1; }
 .btn.mini { padding: 2px; border-radius: 6px; }
@@ -288,6 +299,30 @@ ul.sec li ha-icon { --mdc-icon-size: 18px; flex: none; }
 .m-note ha-icon { --mdc-icon-size: 16px; }
 .sb .m-legend + .m-note, .sb .m-legend { padding-bottom: 12px; }
 .prow .pt .badge { margin-top: 4px; display: inline-block; }
+
+/* icon picker */
+.iconfield { position: relative; }
+.iconbtn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 12px; border: 1px solid var(--pm-line);
+  border-radius: 10px; background: var(--pm-bg); text-align: left; color: var(--pm-text); }
+.iconbtn:hover, .iconbtn[aria-expanded="true"] { border-color: var(--pm-primary); }
+.iconbtn > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.iconbtn ha-icon { --mdc-icon-size: 20px; color: var(--pm-muted); }
+.iconbtn ha-icon:first-child { color: var(--pm-primary); }
+.iconpop { position: absolute; z-index: 30; top: 100%; right: 0; margin-top: 6px; width: min(440px, calc(100vw - 32px));
+  background: var(--pm-card); border: 1px solid var(--pm-line); border-radius: 14px; box-shadow: 0 14px 40px rgba(0,0,0,.22);
+  padding: 12px; display: grid; gap: 8px; }
+.icongrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 6px; max-height: 264px; overflow: auto; }
+.icongrid button { height: 44px; border-radius: 10px; border: 1px solid transparent; background: var(--pm-bg); display: grid; place-items: center; }
+.icongrid button:hover { border-color: var(--pm-primary); }
+.icongrid button ha-icon { --mdc-icon-size: 22px; color: var(--pm-text); }
+.icongrid button.on { background: var(--pm-primary); }
+.icongrid button.on ha-icon { color: #fff; }
+
+/* nothing inside a grid column may push it wider than the column */
+.grid > *, .detail > *, .md > *, .form2 > * { min-width: 0; }
+.card > .body.grid { grid-template-columns: minmax(0, 1fr); }
+.sort .si { min-width: 0; }
+.field select { min-width: 0; text-overflow: ellipsis; }
 
 /* view as + tools */
 .vapick { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); }

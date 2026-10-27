@@ -2,6 +2,15 @@
 
 🇬🇧 [English](CHANGELOG.md) · 🇪🇸 Español
 
+## 1.0.2 — 2026-10-27
+- **Dashboard por defecto con un toque:** se fue el desplegable. En la tarjeta *Orden y dashboard por defecto* de usuarios y
+  perfiles, tocá la casa junto a un dashboard para que el usuario entre ahí; tocala de nuevo para volver a lo heredado. Una
+  casa tenue indica un valor heredado de un perfil, y una línea arriba de la lista dice en qué dashboard entra.
+- **Selector de íconos para perfiles:** un botón abre una grilla con buscador sobre la lista de íconos de Home Assistant
+  (unos 7.000, por nombre y palabras clave, los mejores primero) y sugeridos antes de escribir. Ya no hay que escribir `mdi:`.
+- **Corregido:** en el editor de perfiles, la lista de orden y sus controles podían salirse de su tarjeta en algunos anchos de
+  pantalla. La columna de orden es más ancha y nada dentro de una columna puede agrandarla.
+
 ## 1.0.1 — 2026-10-27
 - **Agregar la integración ya no se puede trabar:** el arranque ya no espera a que se apliquen las reglas a todos los usuarios
   (eso ahora pasa justo después, en segundo plano). En una instalación lenta o particular, el diálogo *Agregar integración*
