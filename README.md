@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/SkynetCom/sk-panel-manager-ha/releases"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSkynetCom%2Fsk-panel-manager-ha%2Fmain%2Fcustom_components%2Fsk_panel_manager%2Fmanifest.json&query=%24.version&prefix=v&label=version&color=3f51cd&cacheSeconds=3600" alt="Version"></a>
+  <a href="https://github.com/SkynetCom/sk-panel-manager-ha/releases"><img src="https://img.shields.io/github/v/release/SkynetCom/sk-panel-manager-ha?label=version&color=3f51cd&cacheSeconds=300" alt="Version"></a>
   <a href="https://hacs.xyz/docs/faq/custom_repositories/"><img src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg" alt="HACS Custom"></a>
   <img src="https://img.shields.io/badge/Home%20Assistant-2026.1%2B-18bcf2?logo=homeassistant&logoColor=white" alt="Home Assistant 2026.1+">
   <a href="https://github.com/SkynetCom/sk-panel-manager-ha/actions/workflows/validate.yml"><img src="https://github.com/SkynetCom/sk-panel-manager-ha/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
@@ -45,7 +45,7 @@ Every user and profile against every panel (dashboards, built-in panels, integra
 <td width="33%" valign="top">
 
 ### 👨‍👩‍👧 Profiles
-Group rules into profiles such as **Kids**, **Guests**, **Wall tablet** or **Staff**, each with an icon and a colour. A user can have several, and their **permissions add up**. A rule set on the user always wins.
+Group rules into profiles such as **Kids**, **Guests**, **Wall tablet** or **Staff**, each with a colour and an icon picked from a **searchable grid** of Home Assistant's icons. A user can have several, and their **permissions add up**. A rule set on the user always wins.
 
 </td>
 <td width="33%" valign="top">
@@ -59,7 +59,7 @@ While you edit a user, the right column shows **their sidebar exactly as it will
 <td valign="top">
 
 ### 🏠 Default dashboard and order
-Choose the dashboard each user or profile **starts on**, and **drag** the panels into the order you want. If a default dashboard gets hidden, users land on the first panel they're allowed to see.
+**Tap the house** next to a dashboard to make it the one a user or profile **starts on**, and **drag** the panels into the order you want. A faded house shows a default inherited from a profile. If a default dashboard gets hidden, users land on the first panel they're allowed to see.
 
 </td>
 <td valign="top">
@@ -125,12 +125,12 @@ The integration writes each user's sidebar and default dashboard to **Home Assis
 
 <p align="center"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/matrix.png" alt="Access matrix" width="100%"><br><sub><b>Access matrix</b>: profiles on top, users below. Solid = set here, faded = inherited, lock = admin-only panel.</sub></p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/user.png" alt="User page with sidebar preview" width="100%"><br><sub><b>User page</b>: profiles, a rule per panel, default dashboard, drag &amp; drop order and the live sidebar preview.</sub></p>
+<p align="center"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/user.png" alt="User page with sidebar preview" width="100%"><br><sub><b>User page</b>: profiles, a rule per panel, drag &amp; drop order with a house to mark the default dashboard, and the live sidebar preview.</sub></p>
 
 <table>
 <tr>
 <td width="50%"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/overview.png" alt="Overview"><br><sub><b>Overview</b>: who sees how much, where each user starts, and alerts (for example, a user who can't see any panel).</sub></td>
-<td width="50%"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/profile.png" alt="Profile editor"><br><sub><b>Profile editor</b>: name, icon, colour, members, rules, default dashboard and order.</sub></td>
+<td width="50%"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/profile.png" alt="Profile editor"><br><sub><b>Profile editor</b>: name, icon (searchable picker), colour, members, rules, order and default dashboard.</sub></td>
 </tr>
 <tr>
 <td width="50%"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/settings.png" alt="Settings in dark theme"><br><sub><b>Settings</b> (dark theme): policy for panels without a rule, administrators, locking and redirection, and what it protects.</sub></td>
@@ -214,7 +214,7 @@ Nothing else to configure: the browser module is loaded automatically, with no `
 ## ⚡ Get started in 4 steps
 
 1. **Settings** → choose what happens to panels without a rule. *Show them* is the easiest way to start. *Hide them* is the strictest: new dashboards stay hidden until you allow them.
-2. **Profiles** → **New profile** → name it (for example *Kids*), mark which panels to **Show** or **Hide**, pick its default dashboard and drag the order.
+2. **Profiles** → **New profile** → name it (for example *Kids*), mark which panels to **Show** or **Hide**, drag the order and **tap the house** of the dashboard it should start on.
 3. **Users** → open a user → turn on their **profiles**. Fine-tune any panel with **Show** or **Hide** on the user, and check the **sidebar preview** on the right.
 4. **Save**. Open Home Assistant as that user: the sidebar has already changed.
 
@@ -297,6 +297,7 @@ Open **View as…** with that user and device: it shows the final result and, in
 - [x] **Kiosk mode editor** per user, profile, device and dashboard, and named **devices** (0.4)
 - [x] **View as…**, **import from Kiosk Mode** and **backup** (0.5)
 - [x] **1.0**: diagnostics, first stable release
+- [x] **1.0.1–1.0.3**: setup that can't get stuck, security hardening, default dashboard with a tap, icon picker, styled drop-downs
 - [ ] Schedules: rules that only apply at certain times (e.g. *Kids* see Media from 17:00 to 20:00)
 - [ ] Optional best-effort blocking of hidden dashboards' configuration
 

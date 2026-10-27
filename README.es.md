@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/SkynetCom/sk-panel-manager-ha/releases"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2FSkynetCom%2Fsk-panel-manager-ha%2Fmain%2Fcustom_components%2Fsk_panel_manager%2Fmanifest.json&query=%24.version&prefix=v&label=versi%C3%B3n&color=3f51cd&cacheSeconds=3600" alt="Versión"></a>
+  <a href="https://github.com/SkynetCom/sk-panel-manager-ha/releases"><img src="https://img.shields.io/github/v/release/SkynetCom/sk-panel-manager-ha?label=versi%C3%B3n&color=3f51cd&cacheSeconds=300" alt="Versión"></a>
   <a href="https://hacs.xyz/docs/faq/custom_repositories/"><img src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg" alt="HACS Custom"></a>
   <img src="https://img.shields.io/badge/Home%20Assistant-2026.1%2B-18bcf2?logo=homeassistant&logoColor=white" alt="Home Assistant 2026.1+">
   <a href="https://github.com/SkynetCom/sk-panel-manager-ha/actions/workflows/validate.yml"><img src="https://github.com/SkynetCom/sk-panel-manager-ha/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
@@ -45,7 +45,7 @@ Todos los usuarios y perfiles contra todos los paneles (dashboards, paneles de H
 <td width="33%" valign="top">
 
 ### 👨‍👩‍👧 Perfiles
-Agrupá reglas en perfiles como **Chicos**, **Invitados**, **Tablet de pared** o **Personal**, cada uno con ícono y color. Un usuario puede tener varios y **los permisos se suman**. Una regla puesta en el usuario siempre gana.
+Agrupá reglas en perfiles como **Chicos**, **Invitados**, **Tablet de pared** o **Personal**, cada uno con color y un ícono elegido desde una **grilla con buscador** de los íconos de Home Assistant. Un usuario puede tener varios y **los permisos se suman**. Una regla puesta en el usuario siempre gana.
 
 </td>
 <td width="33%" valign="top">
@@ -59,7 +59,7 @@ Mientras editás un usuario, la columna derecha muestra **su barra lateral tal c
 <td valign="top">
 
 ### 🏠 Dashboard por defecto y orden
-Elegí en qué dashboard **entra** cada usuario o perfil y **arrastrá** los paneles al orden que quieras. Si el dashboard por defecto queda oculto, el usuario entra en el primer panel que tiene permitido.
+**Tocá la casita** junto a un dashboard para que sea en el que **entra** cada usuario o perfil, y **arrastrá** los paneles al orden que quieras. Una casa tenue indica un valor heredado de un perfil. Si el dashboard por defecto queda oculto, el usuario entra en el primer panel que tiene permitido.
 
 </td>
 <td valign="top">
@@ -125,12 +125,12 @@ La integración escribe la barra lateral y el dashboard por defecto de cada usua
 
 <p align="center"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/matrix.es.png" alt="Matriz de acceso" width="100%"><br><sub><b>Matriz de acceso</b>: arriba los perfiles, abajo los usuarios. Lleno = puesto acá, tenue = heredado, candado = panel solo para admins.</sub></p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/user.es.png" alt="Ficha de usuario con vista previa de la barra" width="100%"><br><sub><b>Ficha de usuario</b>: perfiles, una regla por panel, dashboard por defecto, orden con arrastrar y soltar, y la vista previa de la barra en vivo.</sub></p>
+<p align="center"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/user.es.png" alt="Ficha de usuario con vista previa de la barra" width="100%"><br><sub><b>Ficha de usuario</b>: perfiles, una regla por panel, orden con arrastrar y soltar con una casita para marcar el dashboard por defecto, y la vista previa de la barra en vivo.</sub></p>
 
 <table>
 <tr>
 <td width="50%"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/overview.es.png" alt="Resumen"><br><sub><b>Resumen</b>: cuánto ve cada uno, dónde entra cada usuario y alertas (por ejemplo, un usuario que no ve ningún panel).</sub></td>
-<td width="50%"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/profile.es.png" alt="Editor de perfiles"><br><sub><b>Editor de perfiles</b>: nombre, ícono, color, miembros, reglas, dashboard por defecto y orden.</sub></td>
+<td width="50%"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/profile.es.png" alt="Editor de perfiles"><br><sub><b>Editor de perfiles</b>: nombre, ícono (selector con buscador), color, miembros, reglas, orden y dashboard por defecto.</sub></td>
 </tr>
 <tr>
 <td width="50%"><img src="https://raw.githubusercontent.com/SkynetCom/sk-panel-manager-ha/main/docs/settings.es.png" alt="Ajustes en tema oscuro"><br><sub><b>Ajustes</b> (tema oscuro): política para paneles sin regla, administradores, bloqueo, redirección y qué protege.</sub></td>
@@ -214,7 +214,7 @@ No hay nada más que configurar: el módulo del navegador se carga solo, sin toc
 ## ⚡ Empezá en 4 pasos
 
 1. **Ajustes** → elegí qué pasa con los paneles sin regla. *Mostrarlos* es lo más fácil para empezar. *Ocultarlos* es lo más estricto: los dashboards nuevos quedan ocultos hasta que los permitas.
-2. **Perfiles** → **Nuevo perfil** → ponele nombre (por ejemplo *Chicos*), marcá qué paneles **Mostrar** u **Ocultar**, elegí su dashboard por defecto y arrastrá el orden.
+2. **Perfiles** → **Nuevo perfil** → ponele nombre (por ejemplo *Chicos*), marcá qué paneles **Mostrar** u **Ocultar**, arrastrá el orden y **tocá la casita** del dashboard en el que tiene que entrar.
 3. **Usuarios** → abrí un usuario → activá sus **perfiles**. Ajustá cualquier panel con **Mostrar** u **Ocultar** en el usuario y revisá la **vista previa** de la derecha.
 4. **Guardar**. Abrí Home Assistant con ese usuario: la barra ya cambió.
 
@@ -297,6 +297,7 @@ Abrí **Ver como…** con ese usuario y dispositivo: muestra el resultado final 
 - [x] **Editor de modo kiosk** por usuario, perfil, dispositivo y dashboard, y **dispositivos** con nombre (0.4)
 - [x] **Ver como…**, **importar desde Kiosk Mode** y **copia de seguridad** (0.5)
 - [x] **1.0**: diagnóstico, primera versión estable
+- [x] **1.0.1–1.0.3**: instalación que no se traba, refuerzos de seguridad, dashboard por defecto con un toque, selector de íconos, desplegables con estilo propio
 - [ ] Horarios: reglas que se aplican solo a ciertas horas (por ejemplo, *Chicos* ve Multimedia de 17 a 20 h)
 - [ ] Bloqueo opcional "best effort" de la configuración de los dashboards ocultos
 
