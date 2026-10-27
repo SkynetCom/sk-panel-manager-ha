@@ -1,6 +1,6 @@
 // Kiosk tab of the SK Panel Manager panel: layers (general, profiles, users, devices), per-dashboard
 // overrides, option groups and a mock of Home Assistant showing what gets hidden.
-import { resolveKioskFor, unmanagedReason } from "./skpm-resolver.js?v=1.0.2";
+import { resolveKioskFor, unmanagedReason } from "./skpm-resolver.js?v=1.0.3";
 
 export const KIOSK_GROUPS = {
   screen: [["kiosk", "mdi:monitor-lock"], ["hide_header", "mdi:page-layout-header"], ["hide_sidebar", "mdi:page-layout-sidebar-left"], ["hide_menubutton", "mdi:menu"]],
@@ -131,7 +131,9 @@ export const KioskMixin = (Base) => class extends Base {
         <button class="chip toggle ${scope === "all" ? "on" : ""}" data-action="k-scope" data-scope="all">${icon("mdi:view-dashboard-variant")}${esc(t("k_all_dashboards"))}</button>
         ${dashOverrides.map((p) => `<span class="chip toggle ${scope === p ? "on" : ""}" data-action="k-scope" data-scope="${esc(p)}">${icon(this._picon(p))}${esc(this._ptitle(p))}
           <button class="x" data-action="k-del-scope" data-scope="${esc(p)}" aria-label="${esc(t("k_remove"))}">${icon("mdi:close")}</button></span>`).join("")}
-        ${free.length ? `<select class="addscope" data-change="k-add-scope"><option value="">＋ ${esc(t("k_add_dashboard"))}</option>${free.map((d) => `<option value="${esc(d.url_path)}">${esc(this._ptitle(d.url_path))}</option>`).join("")}</select>` : ""}
+        ${free.length ? this._dropdown({ id: "k-add", change: "k-add-scope", cls: "addscope",
+          button: `${icon("mdi:plus")}<span>${esc(t("k_add_dashboard"))}</span>${icon("mdi:chevron-down")}`,
+          options: free.map((d) => ({ value: d.url_path, label: this._ptitle(d.url_path), icon: this._picon(d.url_path) })) }) : ""}
       </div>
       <p class="muted small" style="margin:8px 0 0">${esc(scope === "all" ? t("k_scope_all_hint") : t("k_scope_dash_hint", { d: this._ptitle(scope) }))}</p>`;
 

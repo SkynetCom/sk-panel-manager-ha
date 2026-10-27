@@ -263,7 +263,6 @@ ul.sec li ha-icon { --mdc-icon-size: 18px; flex: none; }
 .scopes .chip { padding: 6px 12px; font-size: 13px; }
 .scopes .chip .x { border: 0; background: none; color: inherit; padding: 0 0 0 4px; display: inline-grid; opacity: .8; }
 .scopes .chip .x ha-icon { --mdc-icon-size: 14px; }
-.scopes .addscope { width: auto; padding: 6px 10px; border-radius: 99px; font-size: 13px; border-style: dashed; }
 .mock { position: relative; display: flex; height: 230px; margin: 0 14px; border-radius: 12px; overflow: hidden; border: 1px solid var(--pm-line); background: var(--pm-bg); font-size: 11px; }
 .mock ha-icon { --mdc-icon-size: 14px; color: var(--pm-muted); }
 .mock .off { opacity: .22; outline: 1.5px dashed var(--pm-red); outline-offset: -2px; }
@@ -300,6 +299,31 @@ ul.sec li ha-icon { --mdc-icon-size: 18px; flex: none; }
 .sb .m-legend + .m-note, .sb .m-legend { padding-bottom: 12px; }
 .prow .pt .badge { margin-top: 4px; display: inline-block; }
 
+/* dropdown (replaces <select>) */
+.dd { position: relative; display: grid; gap: 6px; min-width: 0; }
+.ddlabel { font-size: 12px; color: var(--pm-muted); font-weight: 500; }
+.ddbtn { display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; padding: 8px 12px; border: 1px solid var(--pm-line);
+  border-radius: 10px; background: var(--pm-bg); color: var(--pm-text); text-align: left; font-size: 14px; }
+.ddbtn:hover, .dd.open .ddbtn { border-color: var(--pm-primary); }
+.ddbtn > span:not(.avatar) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ddbtn > ha-icon { --mdc-icon-size: 20px; color: var(--pm-muted); flex: none; }
+.ddbtn > ha-icon:last-child { transition: transform .15s; }
+.dd.open .ddbtn > ha-icon:last-child { transform: rotate(180deg); }
+.ddpop { position: absolute; z-index: 40; top: 100%; left: 0; margin-top: 6px; min-width: 100%; width: max-content;
+  max-width: min(420px, calc(100vw - 32px)); max-height: 320px; overflow: auto; padding: 6px; display: grid; gap: 2px;
+  background: var(--pm-card); border: 1px solid var(--pm-line); border-radius: 12px; box-shadow: 0 14px 40px rgba(0,0,0,.22); }
+.ddopt { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 0; border-radius: 8px; background: none;
+  color: var(--pm-text); text-align: left; font-size: 14px; white-space: nowrap; }
+.ddopt > span:not(.avatar) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ddopt ha-icon { --mdc-icon-size: 20px; color: var(--pm-muted); flex: none; }
+.ddopt:hover, .ddopt:focus-visible { background: var(--pm-soft); outline: none; }
+.ddopt.sel { font-weight: 600; }
+.ddopt.sel ha-icon:last-child { color: var(--pm-primary); }
+.avatar.xs { width: 24px; height: 24px; font-size: 10px; }
+/* "add a dashboard" chip in the kiosk tab */
+.dd.addscope .ddbtn { width: auto; padding: 6px 12px; border-radius: 99px; border-style: dashed; background: none; font-size: 13px; }
+.dd.addscope .ddbtn > ha-icon { --mdc-icon-size: 16px; }
+
 /* icon picker */
 .iconfield { position: relative; }
 .iconbtn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 12px; border: 1px solid var(--pm-line);
@@ -329,7 +353,7 @@ ul.sec li ha-icon { --mdc-icon-size: 18px; flex: none; }
 .vastat { display: grid; text-align: right; padding-left: 16px; border-left: 1px solid var(--pm-line); }
 .vastat b { font-size: 16px; }
 .banner.ok { background: var(--pm-green-soft); }
-.banner { margin-bottom: 0; }
+.card .banner:last-child, .grid > .banner:last-child { margin-bottom: 0; }
 table.why { width: 100%; border-collapse: collapse; font-size: 13px; }
 table.why td { padding: 7px 8px; border-bottom: 1px solid var(--pm-line); vertical-align: middle; }
 table.why tr:last-child td { border-bottom: 0; }

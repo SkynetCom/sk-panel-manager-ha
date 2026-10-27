@@ -2,6 +2,13 @@
 
 🇬🇧 [English](CHANGELOG.md) · 🇪🇸 Español
 
+## 1.0.3 — 2026-10-27
+- **Desplegables con el estilo del panel en todos lados:** los menús propios del navegador se reemplazan por un desplegable
+  del panel (íconos, avatares de usuarios, tilde en la opción elegida, flechas del teclado, Escape y click afuera para
+  cerrar) en *Ver como…* y en *Ajuste para un dashboard* de la pestaña Kiosk.
+- Corregido: el aviso de "versión anterior de este panel" (y otros avisos arriba de una página) quedaba pegado a las
+  tarjetas de abajo; recuperó su separación. Los avisos dentro de las tarjetas mantienen su espaciado.
+
 ## 1.0.2 — 2026-10-27
 - **Dashboard por defecto con un toque:** se fue el desplegable. En la tarjeta *Orden y dashboard por defecto* de usuarios y
   perfiles, tocá la casa junto a un dashboard para que el usuario entre ahí; tocala de nuevo para volver a lo heredado. Una

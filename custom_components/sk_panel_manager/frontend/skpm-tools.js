@@ -1,7 +1,7 @@
 // "View as…" tab, backup (export / import) and the Kiosk Mode importer of the SK Panel Manager panel.
-import { explainKiosk, resolveKioskFor } from "./skpm-resolver.js?v=1.0.2";
-import { applyKioskImport, convertKioskMode, makeBackup, readBackup } from "./skpm-import.js?v=1.0.2";
-import { KIOSK_GROUPS } from "./skpm-kiosk.js?v=1.0.2";
+import { explainKiosk, resolveKioskFor } from "./skpm-resolver.js?v=1.0.3";
+import { applyKioskImport, convertKioskMode, makeBackup, readBackup } from "./skpm-import.js?v=1.0.3";
+import { KIOSK_GROUPS } from "./skpm-kiosk.js?v=1.0.3";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const icon = (name) => `<ha-icon icon="${esc(name)}"></ha-icon>`;
@@ -25,10 +25,13 @@ export const ToolsMixin = (Base) => class extends Base {
     const device = this._vaDevice || null;
 
     const pickers = `<div class="card"><div class="body vapick">
-        <label class="field">${esc(t("va_user"))}<select data-change="va-user">${users.map((x) => `<option value="${esc(x.id)}" ${x.id === u.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></label>
-        <label class="field">${esc(t("va_device"))}<select data-change="va-device"><option value="">${esc(t("va_any_device"))}</option>
-          ${devices.map((d) => `<option value="${esc(d.id)}" ${d.id === device ? "selected" : ""}>${esc(d.name)}</option>`).join("")}</select></label>
-        <label class="field">${esc(t("va_dashboard"))}<select data-change="va-panel">${dashboards.map((d) => `<option value="${esc(d.url_path)}" ${d.url_path === panel ? "selected" : ""}>${esc(this._ptitle(d.url_path))}</option>`).join("")}</select></label>
+        ${this._dropdown({ id: "va-user", change: "va-user", label: t("va_user"), value: u.id,
+          options: users.map((x) => ({ value: x.id, label: x.name, avatar: x })) })}
+        ${this._dropdown({ id: "va-device", change: "va-device", label: t("va_device"), value: device || "",
+          options: [{ value: "", label: t("va_any_device"), icon: "mdi:devices" },
+            ...devices.map((d) => ({ value: d.id, label: d.name, icon: "mdi:tablet-cellphone" }))] })}
+        ${this._dropdown({ id: "va-panel", change: "va-panel", label: t("va_dashboard"), value: panel,
+          options: dashboards.map((d) => ({ value: d.url_path, label: this._ptitle(d.url_path), icon: this._picon(d.url_path) })) })}
       </div></div>`;
 
     // What happens when the user opens the chosen dashboard.

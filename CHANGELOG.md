@@ -2,6 +2,13 @@
 
 🇬🇧 English · 🇪🇸 [Español](CHANGELOG.es.md)
 
+## 1.0.3 — 2026-10-27
+- **Styled drop-downs everywhere:** the browser's own select menus are replaced by the panel's drop-down (icons, user
+  avatars, a check on the current choice, keyboard arrows, Escape and click outside to close) in *View as…* and in the
+  kiosk tab's *Setting for one dashboard*.
+- Fixed: the "older version of this panel" notice (and other notices above a page) touched the cards below it; it has its
+  spacing back. Notices inside cards keep their tighter layout.
+
 ## 1.0.2 — 2026-10-27
 - **Default dashboard with one tap:** the drop-down is gone. In the *Order and default* card of users and profiles, tap the
   house next to a dashboard to make it the one the user starts on; tap it again to go back to the inherited one. A faded

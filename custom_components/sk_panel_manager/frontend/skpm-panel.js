@@ -1,15 +1,15 @@
 // SK Panel Manager — admin panel.
 // Dependency-free web component: renders with template strings, uses event delegation
 // and pointer-based drag & drop (mouse + touch), like SK Irrigation Manager.
-import { translator } from "./skpm-i18n.js?v=1.0.2";
-import { STYLES } from "./skpm-styles.js?v=1.0.2";
-import { resolve } from "./skpm-resolver.js?v=1.0.2";
-import { KioskMixin } from "./skpm-kiosk.js?v=1.0.2";
-import { ToolsMixin } from "./skpm-tools.js?v=1.0.2";
+import { translator } from "./skpm-i18n.js?v=1.0.3";
+import { STYLES } from "./skpm-styles.js?v=1.0.3";
+import { resolve } from "./skpm-resolver.js?v=1.0.3";
+import { KioskMixin } from "./skpm-kiosk.js?v=1.0.3";
+import { ToolsMixin } from "./skpm-tools.js?v=1.0.3";
 
 const DOMAIN = "sk_panel_manager";
 // Version of this file; compared with the installed integration to spot a stale browser cache.
-export const PANEL_VERSION = "1.0.2";
+export const PANEL_VERSION = "1.0.3";
 const TABS = [
   ["overview", "mdi:view-dashboard-outline"],
   ["matrix", "mdi:table-check"],
@@ -637,6 +637,31 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
     </div>`;
   }
 
+  // ------------------------------------------------------------------ dropdown
+  // Styled replacement for <select>. `change` and `data` go through the same _onChange as a select did.
+  // options: [{ value, label, icon?, avatar? }]; `button` overrides the closed look (e.g. an "add" chip).
+  _dropdown({ id, change, data = {}, value = "", options, label = "", button = null, cls = "" }) {
+    const open = this._dd === id;
+    const current = options.find((o) => o.value === value);
+    const attrs = Object.entries(data).map(([k, v]) => ` data-${k}="${esc(v)}"`).join("");
+    const lead = (o) => (o.avatar ? this._avatar(o.avatar, "xs") : o.icon ? icon(o.icon) : "");
+    const shown = button || `${current ? lead(current) : ""}<span>${esc(current ? current.label : "")}</span>${icon("mdi:chevron-down")}`;
+    return `<div class="dd ${cls} ${open ? "open" : ""}" data-dd="${esc(id)}" data-change="${esc(change)}"${attrs}>
+      ${label ? `<span class="ddlabel">${esc(label)}</span>` : ""}
+      <button class="ddbtn" data-action="dd-toggle" data-dd="${esc(id)}" aria-haspopup="listbox" aria-expanded="${open}">${shown}</button>
+      ${open ? `<div class="ddpop" role="listbox">${options.map((o) => `<button class="ddopt ${o.value === value ? "sel" : ""}" role="option"
+        aria-selected="${o.value === value}" data-action="dd-pick" data-dd="${esc(id)}" data-value="${esc(o.value)}">${lead(o)}<span>${esc(o.label)}</span>
+        ${o.value === value ? icon("mdi:check") : ""}</button>`).join("")}</div>` : ""}
+    </div>`;
+  }
+
+  _ddPick(el) {
+    const box = el.closest(".dd");
+    this._dd = null;
+    // Same path as a native select's "change" event.
+    this._onChange({ target: { dataset: box.dataset, value: el.dataset.value, files: null } });
+  }
+
   // ------------------------------------------------------------------ icon picker
   _iconPop(pid, current) {
     const t = this.t;
@@ -684,6 +709,10 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
   _onClick(ev) {
     if (this._iconPicker && !ev.target.closest(".iconfield")) {
       this._iconPicker = null;
+      this._render();
+    }
+    if (this._dd && !ev.target.closest(".dd")) {
+      this._dd = null;
       this._render();
     }
     const tab = ev.target.closest("[data-tab]");
@@ -767,6 +796,14 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
         this._selProfile = null;
         break;
       }
+      case "dd-toggle": {
+        this._dd = this._dd === d.dd ? null : d.dd;
+        this._render();
+        // Keyboard users land on the selected option.
+        if (this._dd) (this.shadowRoot.querySelector(".dd.open .ddopt.sel") || this.shadowRoot.querySelector(".dd.open .ddopt"))?.focus();
+        return;
+      }
+      case "dd-pick": this._ddPick(el); return;
       case "profile-color": this._draft.profiles[d.pid].color = d.color; break;
       case "set-default": {
         // Tap the house of a dashboard to start there; tap it again to go back to inherited / unchanged.
@@ -898,6 +935,23 @@ class SkPanelManagerPanel extends ToolsMixin(KioskMixin(HTMLElement)) {
   }
 
   _onKeyDown(ev) {
+    if (this._dd && ev.target.closest?.(".dd")) {
+      const opts = [...this.shadowRoot.querySelectorAll(".dd.open .ddopt")];
+      const i = opts.indexOf(ev.target);
+      if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+        ev.preventDefault();
+        const next = i < 0 ? 0 : Math.min(opts.length - 1, Math.max(0, i + (ev.key === "ArrowDown" ? 1 : -1)));
+        opts[next]?.focus();
+        return;
+      }
+      if (ev.key === "Escape") {
+        const id = this._dd;
+        this._dd = null;
+        this._render();
+        this.shadowRoot.querySelector(`.dd[data-dd="${CSS.escape(id)}"] .ddbtn`)?.focus();
+        return;
+      }
+    }
     if (ev.key === "Escape" && this._iconPicker) {
       this._iconPicker = null;
       this._render();
