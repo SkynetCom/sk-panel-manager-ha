@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://github.com/SkynetCom/sk-panel-manager-ha/releases"><img src="https://img.shields.io/github/v/release/SkynetCom/sk-panel-manager-ha?label=version&color=3f51cd&cacheSeconds=300" alt="Version"></a>
-  <a href="https://hacs.xyz/docs/faq/custom_repositories/"><img src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg" alt="HACS Custom"></a>
+  <a href="https://github.com/hacs/integration"><img src="https://img.shields.io/badge/HACS-Default-41BDF5.svg" alt="HACS Default"></a>
   <img src="https://img.shields.io/badge/Home%20Assistant-2026.1%2B-18bcf2?logo=homeassistant&logoColor=white" alt="Home Assistant 2026.1+">
   <a href="https://github.com/SkynetCom/sk-panel-manager-ha/actions/workflows/validate.yml"><img src="https://github.com/SkynetCom/sk-panel-manager-ha/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
   <img src="https://img.shields.io/badge/languages-EN%20%7C%20ES-2e9e6b" alt="Languages">
@@ -195,9 +195,9 @@ Kiosk Mode and Custom Sidebar are great projects. Kiosk Mode still offers things
 
 ## 🚀 Installation
 
-### HACS (custom repository)
-1. Click **Open in HACS** above, or go to **HACS → ⋮ → Custom repositories**, add `https://github.com/SkynetCom/sk-panel-manager-ha` with type **Integration**.
-2. Search for **SK Panel Manager**, click **Download** and **restart Home Assistant**.
+### HACS (recommended)
+1. Open **HACS** and search for **SK Panel Manager** (or click **Open in HACS** above).
+2. Click **Download** and **restart Home Assistant**.
 3. **Settings → Devices & services → + Add integration → SK Panel Manager** (or the **Add integration** button above).
 4. **Panels** appears in the sidebar, for administrators only. If you don't see it, reload the browser with Ctrl+F5.
 
